@@ -1,56 +1,45 @@
-/* Combined styles from src/index.css and src/App.css */
-
-/* From index.css */
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  background-color: #111;
+  color: #f0f0f0;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+textarea, input {
+  background-color: #1e1e1e;
+  color: #f0f0f0;
+  border: 1px solid #333;
+  padding: 1rem;
+  border-radius: 8px;
+  width: 100%;
+  font-size: 1rem;
+  margin-top: 0.5rem;
+  box-sizing: border-box;
+  resize: vertical;
 }
 
-/* From App.css - These might need adjustments for Next.js structure */
-.App {
-  text-align: center;
-}
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
+button {
+  background-color: #3f51b5;
   color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  margin-top: 1rem;
+  transition: background-color 0.3s;
 }
 
-.App-link {
-  color: #61dafb;
+button:hover {
+  background-color: #5c6bc0;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-} 
+h1, h3 {
+  color: #fff;
+}
+
+.container {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 2rem;
+}

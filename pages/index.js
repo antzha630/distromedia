@@ -1,51 +1,56 @@
 import { useState } from 'react';
-import React from 'react'; // Keep for clarity, though maybe not strictly needed
 
-function HomePage() { // Renamed from App to HomePage for clarity
+function HomePage() {
   const [inputText, setInputText] = useState('');
   const [tweet, setTweet] = useState('');
 
   const summarize = async () => {
-    // Update the fetch call to the Next.js API route
     const res = await fetch('/api/summarize', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text: inputText }),
     });
-
     const data = await res.json();
     setTweet(data.summary);
   };
-
+  const publishTweet = async () => {
+    const res = await fetch('/api/tweet', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tweet }),
+    });
+  
+    const data = await res.json();
+    if (res.ok) {
+      alert('✅ Tweet posted successfully!');
+    } else {
+      alert('❌ Error: ' + data.error);
+    }
+  };
   return (
-    <div style={{ padding: '2rem', fontFamily: 'Arial' }}>
+    <div className="container">
       <h1>Tweet Summarizer</h1>
+
+      <label htmlFor="articleInput">Paste your article:</label>
       <textarea
+        id="articleInput"
         rows="6"
-        cols="60"
         placeholder="Paste text here..."
         value={inputText}
         onChange={(e) => setInputText(e.target.value)}
       />
-      <br />
-      <button onClick={summarize} style={{ marginTop: '1rem' }}>Summarize</button>
 
-      <h3 style={{ marginTop: '2rem' }}>AI-Generated Tweet:</h3>
+      <button onClick={summarize}>Summarize</button>
+
+      <h3>AI-Generated Tweet:</h3>
       <textarea
         rows="3"
-        cols="60"
         value={tweet}
-        onChange={(e) => setTweet(e.target.value)} // Keep original behavior
+        onChange={(e) => setTweet(e.target.value)}
       />
-      <br />
-      {/* Conditionally render the Publish button if a tweet exists */}
+
       {tweet && (
-        <button 
-          style={{ marginTop: '1rem' }} 
-          onClick={() => console.log('Publish Tweet clicked (no action yet)')}
-        >
+        <button onClick={publishTweet}>
           Publish Tweet
         </button>
       )}
@@ -53,4 +58,4 @@ function HomePage() { // Renamed from App to HomePage for clarity
   );
 }
 
-export default HomePage; 
+export default HomePage;
