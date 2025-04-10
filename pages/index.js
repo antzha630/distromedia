@@ -1,11 +1,13 @@
 import { useState } from 'react';
-import React from 'react';
-function App() {
+import React from 'react'; // Keep for clarity, though maybe not strictly needed
+
+function HomePage() { // Renamed from App to HomePage for clarity
   const [inputText, setInputText] = useState('');
   const [tweet, setTweet] = useState('');
 
   const summarize = async () => {
-    const res = await fetch('http://localhost:3001/summarize', {
+    // Update the fetch call to the Next.js API route
+    const res = await fetch('/api/summarize', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -35,10 +37,20 @@ function App() {
         rows="3"
         cols="60"
         value={tweet}
-        onChange={(e) => setTweet(e.target.value)}
+        onChange={(e) => setTweet(e.target.value)} // Keep original behavior
       />
+      <br />
+      {/* Conditionally render the Publish button if a tweet exists */}
+      {tweet && (
+        <button 
+          style={{ marginTop: '1rem' }} 
+          onClick={() => console.log('Publish Tweet clicked (no action yet)')}
+        >
+          Publish Tweet
+        </button>
+      )}
     </div>
   );
 }
 
-export default App;
+export default HomePage; 
