@@ -2,7 +2,7 @@
   "/_app": "pages/_app.js",
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
+  "/api/bluesky/post": "pages/api/bluesky/post.js",
   "/": "pages/index.js",
-  "/api/summarize": "pages/api/summarize.js",
-  "/api/tweet": "pages/api/tweet.js"
+  "/api/summarize": "pages/api/summarize.js"
 }
