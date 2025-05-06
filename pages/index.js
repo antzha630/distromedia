@@ -77,53 +77,51 @@ function HomePage() {
   };
 
   return (
-    <div className="container">
-      <h1>Tweet Summarizer</h1>
+    <main className="container">
+      <h1>🧠 Tweet Summarizer</h1>
 
-      <label htmlFor="articleInput">Paste your article:</label>
-      <textarea
-        id="articleInput"
-        rows="6"
-        placeholder="Paste text here..."
-        value={inputText}
-        onChange={(e) => setInputText(e.target.value)}
-      />
+      <section className="card">
+        <label htmlFor="articleInput">Paste your article:</label>
+        <textarea
+          id="articleInput"
+          rows="6"
+          placeholder="Paste text here..."
+          value={inputText}
+          onChange={(e) => setInputText(e.target.value)}
+        />
+        <button onClick={summarize}>Summarize</button>
+      </section>
 
-      <button onClick={summarize}>Summarize</button>
+      <section className="card">
+        <h3>AI-Generated Tweet:</h3>
+        <textarea
+          rows="3"
+          value={tweet}
+          onChange={(e) => setTweet(e.target.value)}
+        />
+        {tweet && <button onClick={publishTweet}>Publish to Twitter</button>}
+      </section>
 
-      <h3>AI-Generated Tweet:</h3>
-      <textarea
-        rows="3"
-        value={tweet}
-        onChange={(e) => setTweet(e.target.value)}
-      />
+      <section className="card">
+        <h3>Bluesky Login:</h3>
+        <input
+          placeholder="Bluesky handle"
+          value={blueskyId}
+          onChange={(e) => setBlueskyId(e.target.value)}
+        />
+        <input
+          type="password"
+          placeholder="App Password"
+          value={blueskyPass}
+          onChange={(e) => setBlueskyPass(e.target.value)}
+        />
+        <button onClick={loginBluesky}>Log in to Bluesky</button>
 
-      {tweet && (
-        <>
-          <button onClick={publishTweet}>Publish Tweet</button>
-        </>
-      )}
-
-      <hr />
-
-      <h3>Bluesky Login:</h3>
-      <input
-        placeholder="Bluesky handle"
-        value={blueskyId}
-        onChange={(e) => setBlueskyId(e.target.value)}
-      />
-      <input
-        type="password"
-        placeholder="App Password"
-        value={blueskyPass}
-        onChange={(e) => setBlueskyPass(e.target.value)}
-      />
-      <button onClick={loginBluesky}>Log in to Bluesky</button>
-
-      {tweet && blueskySession && (
-        <button onClick={postToBluesky}>Post to Bluesky</button>
-      )}
-    </div>
+        {tweet && blueskySession && (
+          <button onClick={postToBluesky}>Post to Bluesky</button>
+        )}
+      </section>
+    </main>
   );
 }
 
