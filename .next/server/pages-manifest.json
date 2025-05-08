@@ -3,5 +3,9 @@
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
   "/": "pages/index.js",
-  "/api/summarize": "pages/api/summarize.js"
+  "/scheduler": "pages/scheduler.js",
+  "/api/bluesky/login": "pages/api/bluesky/login.js",
+  "/api/summarize": "pages/api/summarize.js",
+  "/api/bluesky/post": "pages/api/bluesky/post.js",
+  "/api/tweet": "pages/api/tweet.js"
 }
