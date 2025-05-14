@@ -17,33 +17,55 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Text is required in the request body' });
   }
 
-  if (!process.env.OPENAI_API_KEY) {
-    console.error('OpenAI API key not found. Make sure OPENAI_API_KEY is set in your .env file.');
-    return res.status(500).json({ error: 'Server configuration error' });
-  }
+  console.log('Received text to summarize:', text.substring(0, 100) + '...');
 
   try {
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini', // Use the specified model
+      model: 'gpt-4o-mini',
       messages: [
-        { role: 'system', content: 'You are a helpful assistant that summarizes text into a concise tweet.' },
-        { role: 'user', content: `Summarize the following text into a tweet (max 280 characters):
-
-${text}` },
+        { 
+          role: 'system', 
+          content: 'You are a social media post summarizer. Create EXTREMELY concise summaries under 200 characters. Never exceed this limit. Focus on the most important point only. Always end with a complete sentence.' 
+        },
+        { 
+          role: 'user', 
+          content: `Create an extremely concise summary (STRICT 200 character limit) of this text. Must end with a complete sentence:\n\n${text}` 
+        },
       ],
-      max_tokens: 70, // Limit response length suitable for a tweet
-      temperature: 0.5, // Adjust creativity level if needed
+      max_tokens: 100,
+      temperature: 0.5,
     });
 
-    const summary = completion.choices[0]?.message?.content?.trim();
+    console.log('OpenAI response:', completion);
+
+    let summary = completion.choices[0]?.message?.content?.trim();
 
     if (!summary) {
-      throw new Error('Failed to generate summary from OpenAI.');
+      console.error('No summary generated from OpenAI');
+      return res.status(400).json({ error: 'Failed to generate summary from OpenAI' });
     }
 
+    // Find the last complete sentence if we need to truncate
+    if (summary.length > 200) {
+      const sentences = summary.match(/[^.!?]+[.!?]+/g) || [];
+      summary = '';
+      for (let sentence of sentences) {
+        if ((summary + sentence).length <= 197) { // Leave room for ellipsis
+          summary += sentence;
+        } else {
+          break;
+        }
+      }
+      summary = summary.trim() + '...';
+    }
+
+    console.log('Final summary:', summary);
     res.status(200).json({ summary });
   } catch (error) {
     console.error('Error calling OpenAI API:', error);
-    res.status(500).json({ error: 'Failed to generate summary' });
+    res.status(500).json({ 
+      error: error.message || 'Failed to generate summary',
+      details: error.response?.data || error.toString()
+    });
   }
 } 

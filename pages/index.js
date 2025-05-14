@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 
 function NewHomePage() {
@@ -7,6 +7,20 @@ function NewHomePage() {
 
   const [blueskyId, setBlueskyId] = useState('');
   const [blueskyPass, setBlueskyPass] = useState('');
+
+  useEffect(() => {
+    // Handle LinkedIn OAuth callback
+    const linkedinData = router.query.linkedin;
+    if (linkedinData) {
+      try {
+        const session = JSON.parse(decodeURIComponent(linkedinData));
+        sessionStorage.setItem('linkedinSession', JSON.stringify(session));
+        router.push('/scheduler');
+      } catch (error) {
+        console.error('Failed to parse LinkedIn session:', error);
+      }
+    }
+  }, [router.query.linkedin]);
 
   const loginBluesky = async () => {
     const res = await fetch('/api/bluesky/login', {
@@ -27,6 +41,10 @@ function NewHomePage() {
     } else {
       alert('❌ Bluesky login failed');
     }
+  };
+
+  const loginLinkedIn = () => {
+    window.location.href = '/api/linkedin/auth';
   };
 
   return (
@@ -56,6 +74,23 @@ function NewHomePage() {
             style={{ display: 'block', marginBottom: '10px' }}
           />
           <button onClick={loginBluesky}>Log in to BlueSky</button>
+        </section>
+
+        <section className="card" style={{ marginTop: '20px', display: 'inline-block', textAlign: 'center' }}>
+          <div 
+            style={{ 
+              color: '#0A66C2', 
+              fontSize: '24px', 
+              fontWeight: 'bold',
+              marginBottom: '20px'
+            }}
+          >
+            LinkedIn
+          </div>
+          <h3>Login with LinkedIn</h3>
+          <button onClick={loginLinkedIn}>
+            Log in with LinkedIn
+          </button>
         </section>
       </div>
     </main>
