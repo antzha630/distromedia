@@ -19,9 +19,19 @@ export default async function handler(req, res) {
       password: appPassword,
     });
 
+    // Fetch the user's profile to get the avatar URL
+    let avatarUrl = '';
+    try {
+      const profile = await agent.api.app.bsky.actor.getProfile({ actor: identifier });
+      avatarUrl = profile.data.avatar || '';
+    } catch (e) {
+      avatarUrl = '';
+    }
+
     res.status(200).json({
       success: true,
       session: result.data,
+      avatarUrl,
     });
   } catch (err) {
     console.error('Login failed:', err);

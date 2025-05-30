@@ -2,8 +2,8 @@
   "/_app": "pages/_app.js",
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
-  "/": "pages/index.js",
+  "/api/bluesky/login": "pages/api/bluesky/login.js",
   "/scheduler": "pages/scheduler.js",
-  "/api/linkedin/auth": "pages/api/linkedin/auth.js",
-  "/api/linkedin/callback": "pages/api/linkedin/callback.js"
+  "/": "pages/index.js",
+  "/post": "pages/post.js"
 }
