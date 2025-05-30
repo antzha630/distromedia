@@ -58,20 +58,45 @@ export default async function handler(req, res) {
       throw new Error('Failed to get user profile');
     }
 
+    // Fetch profile image from LinkedIn v2/me endpoint
+    let profileImageUrl = '';
+    try {
+      const meResponse = await fetch('https://api.linkedin.com/v2/me?projection=(profilePicture(displayImage~:playableStreams))', {
+        headers: {
+          'Authorization': `Bearer ${tokenData.access_token}`,
+        },
+      });
+      const meData = await meResponse.json();
+      const elements = meData.profilePicture && meData.profilePicture['displayImage~'] && meData.profilePicture['displayImage~'].elements;
+      if (elements && elements.length > 0) {
+        // Get the largest available image
+        const largest = elements[elements.length - 1];
+        profileImageUrl = largest.identifiers[0].identifier;
+      }
+      console.log('LinkedIn /me response:', JSON.stringify(meData, null, 2));
+    } catch (e) {
+      profileImageUrl = '';
+    }
+
     // Store the session data
     const session = {
       accessToken: tokenData.access_token,
       expiresIn: tokenData.expires_in,
       userId: profileData.sub,
       name: profileData.name || `${profileData.given_name} ${profileData.family_name}`,
-      email: profileData.email
+      email: profileData.email,
+      profileImageUrl
     };
+
+    console.log('Session being sent to frontend:', session);
 
     // Clear the state cookie
     res.setHeader('Set-Cookie', 'linkedin_oauth_state=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT');
 
     // Redirect back to the app with the session data
     res.redirect(`/?linkedin=${encodeURIComponent(JSON.stringify(session))}`);
+
+    console.log('LinkedIn session:', session);
   } catch (error) {
     console.error('LinkedIn callback error:', error);
     res.redirect(`/?error=${encodeURIComponent(error.message || 'Authentication failed')}`);

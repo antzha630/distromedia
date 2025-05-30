@@ -9,12 +9,14 @@ function SchedulerPage() {
   const [articleUrl, setArticleUrl] = useState('');
   const [articleMetadata, setArticleMetadata] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [telegramSession, setTelegramSession] = useState(null);
 
   // Load sessions from sessionStorage on mount
   useEffect(() => {
     const storedBlueskySession = sessionStorage.getItem('blueskySession');
     const storedBlueskyHandle = sessionStorage.getItem('blueskyHandle');
     const storedLinkedinSession = sessionStorage.getItem('linkedinSession');
+    const storedTelegramSession = sessionStorage.getItem('telegramSession');
 
     if (storedBlueskySession) {
       setBlueskySession(JSON.parse(storedBlueskySession));
@@ -25,6 +27,7 @@ function SchedulerPage() {
     if (storedLinkedinSession) {
       setLinkedinSession(JSON.parse(storedLinkedinSession));
     }
+    if (storedTelegramSession) setTelegramSession(JSON.parse(storedTelegramSession));
   }, []);
 
   const fetchArticleMetadata = async () => {
@@ -41,8 +44,14 @@ function SchedulerPage() {
       }
 
       setArticleMetadata(data);
-      // Pre-fill the input text with article title and description
-      setInputText(`${data.title}\n\n${data.description || ''}`);
+      sessionStorage.setItem('articleUrl', articleUrl);
+      sessionStorage.setItem('articleMetadata', JSON.stringify(data));
+      // Pre-fill the input text with the full article text if available
+      if (data.articleText && data.articleText.length > 0) {
+        setInputText(data.articleText);
+      } else {
+        setInputText(`${data.title}\n\n${data.description || ''}`);
+      }
     } catch (error) {
       alert('❌ Error fetching article metadata');
       console.error('Error:', error);
@@ -58,24 +67,49 @@ function SchedulerPage() {
     }
 
     try {
-      const res = await fetch('/api/summarize', {
+      // LinkedIn summary (professional)
+      const resLinkedIn = await fetch('/api/summarize', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: inputText }),
+        body: JSON.stringify({
+          text: `Write a professional, engaging LinkedIn post summarizing this article for a business audience. Use a formal tone and highlight key insights.\n\n${inputText}`
+        }),
       });
+      const dataLinkedIn = await resLinkedIn.json();
 
-      const data = await res.json();
-      
-      if (!res.ok) {
-        console.error('Summarize error:', data);
-        alert(`❌ Error: ${data.error || 'Failed to generate summary'}`);
-        return;
+      // Bluesky summary (casual)
+      const resBluesky = await fetch('/api/summarize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: `Write a casual, concise, and engaging post for Bluesky (like a tweet). Use a friendly, informal tone and keep it short.\n\n${inputText}`
+        }),
+      });
+      const dataBluesky = await resBluesky.json();
+
+      // Telegram summary (friendly, direct, suitable for a Telegram message)
+      const resTelegram = await fetch('/api/summarize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: `Write a friendly, direct, and concise message for Telegram summarizing this article. Use a conversational tone and keep it under 200 characters.\n\n${inputText}`
+        }),
+      });
+      const dataTelegram = await resTelegram.json();
+
+      if (dataLinkedIn.summary) {
+        sessionStorage.setItem('linkedinSummary', dataLinkedIn.summary);
       }
-
-      if (data.summary) {
-        setTweet(data.summary);
-      } else {
+      if (dataBluesky.summary) {
+        sessionStorage.setItem('blueskySummary', dataBluesky.summary);
+      }
+      if (dataTelegram.summary) {
+        sessionStorage.setItem('telegramMessage', dataTelegram.summary);
+      }
+      if (!dataLinkedIn.summary && !dataBluesky.summary && !dataTelegram.summary) {
         alert('❌ No summary was generated. Please try again.');
+      } else {
+        alert('✅ Summaries generated! Go to the Post page to review and post.');
       }
     } catch (error) {
       console.error('Summarize error:', error);
@@ -192,6 +226,16 @@ function SchedulerPage() {
             >
               {blueskyUserHandle.startsWith('@') ? blueskyUserHandle : `@${blueskyUserHandle}`}
             </a> on BlueSky
+            <br />
+          </>
+        )}
+        {telegramSession && (
+          <>
+            <span style={{ color: '#229ED9', fontWeight: 600 }}>
+              {telegramSession.first_name || ''} {telegramSession.last_name || ''}
+              {telegramSession.username ? ` (@${telegramSession.username})` : ''}
+            </span> on Telegram
+            <br />
           </>
         )}
       </p>
@@ -252,26 +296,11 @@ function SchedulerPage() {
         <button onClick={summarize}>Summarize</button>
       </section>
 
-      <section className="card">
-        <h3>AI-Generated Output (edit as needed):</h3>
-        <textarea
-          rows="3"
-          value={tweet}
-          onChange={(e) => setTweet(e.target.value)}
-        />
-        <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-start' }}>
-          {tweet && blueskySession && (
-            <button onClick={postToBluesky}>
-              Upload to Bluesky {articleMetadata ? 'with Preview' : ''}
-            </button>
-          )}
-          {tweet && linkedinSession && (
-            <button onClick={postToLinkedIn}>
-              Upload to LinkedIn {articleUrl ? 'with Article' : ''}
-            </button>
-          )}
-        </div>
-      </section>
+      <div style={{ textAlign: 'center', marginTop: '30px', marginBottom: '40px' }}>
+        <a href="/post">
+          <button style={{ minWidth: 200 }}>Go to Post Page</button>
+        </a>
+      </div>
 
       {(!blueskySession || !linkedinSession) && (
         <section className="card">
