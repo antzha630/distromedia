@@ -183,6 +183,23 @@ function NewHomePage() {
     window.location.href = '/api/linkedin/auth';
   };
 
+  // Add function to verify bot configuration
+  const verifyTelegramBot = async () => {
+    try {
+      const response = await fetch('/api/telegram/verify');
+      const data = await response.json();
+      
+      if (data.success) {
+        alert(`✅ Bot verified successfully!\nBot name: ${data.bot.first_name}\nUsername: @${data.bot.username}`);
+      } else {
+        alert(`❌ Bot verification failed: ${data.error}`);
+      }
+    } catch (error) {
+      console.error('Bot verification error:', error);
+      alert('❌ Failed to verify bot configuration. Check console for details.');
+    }
+  };
+
   return (
     <main className="container">
       <div style={{ textAlign: 'center', marginTop: '50px' }}>
@@ -278,10 +295,22 @@ function NewHomePage() {
                 </svg>
               </div>
               <h3>Login with Telegram</h3>
-              <div style={{ display: 'flex', justifyContent: 'center', margin: '10px 0' }}>
-                <div
-                  ref={telegramWidgetRef}
-                />
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+                <div ref={telegramWidgetRef} />
+                <button 
+                  onClick={verifyTelegramBot}
+                  style={{ 
+                    backgroundColor: '#229ED9',
+                    color: 'white',
+                    border: 'none',
+                    padding: '8px 16px',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontSize: '14px'
+                  }}
+                >
+                  Verify Bot Configuration
+                </button>
               </div>
             </section>
           )}
