@@ -39,28 +39,47 @@ function NewHomePage() {
   // Load Telegram widget when component mounts and showTelegram is true
   useEffect(() => {
     if (showTelegram && telegramWidgetRef.current && !telegramWidgetLoaded) {
-      // Clear any existing content
-      telegramWidgetRef.current.innerHTML = '';
-      
-      // Create the script element
-      const script = document.createElement('script');
-      script.async = true;
-      script.src = 'https://telegram.org/js/telegram-widget.js?22';
-      script.setAttribute('data-telegram-login', 'distromedia_bot');
-      script.setAttribute('data-size', 'large');
-      script.setAttribute('data-userpic', 'true');
-      script.setAttribute('data-request-access', 'write');
-      script.setAttribute('data-onauth', 'handleTelegramAuth');
-      script.onerror = (error) => {
-        console.error('Telegram widget failed to load:', error);
-      };
-      script.onload = () => {
-        console.log('Telegram widget loaded successfully');
-      };
-      
-      // Append the script to the container
-      telegramWidgetRef.current.appendChild(script);
-      setTelegramWidgetLoaded(true);
+      try {
+        // Clear any existing content
+        telegramWidgetRef.current.innerHTML = '';
+        
+        // Create the script element
+        const script = document.createElement('script');
+        script.async = true;
+        script.src = 'https://telegram.org/js/telegram-widget.js?22';
+        script.setAttribute('data-telegram-login', 'distromedia_bot');
+        script.setAttribute('data-size', 'large');
+        script.setAttribute('data-userpic', 'true');
+        script.setAttribute('data-request-access', 'write');
+        script.setAttribute('data-onauth', 'handleTelegramAuth');
+        script.setAttribute('data-auth-url', 'https://distromedia.vercel.app');
+        
+        // Add debug logging for widget initialization
+        console.log('Initializing Telegram widget with bot:', 'distromedia_bot');
+        
+        script.onerror = (error) => {
+          console.error('Telegram widget failed to load:', error);
+          alert('Failed to load Telegram login widget. Please try refreshing the page.');
+        };
+        
+        script.onload = () => {
+          console.log('Telegram widget script loaded');
+          if (!window.handleTelegramAuth) {
+            console.error('handleTelegramAuth not found on window object');
+            alert('Telegram login configuration error. Please refresh the page.');
+          } else {
+            console.log('Telegram auth handler is properly configured');
+          }
+        };
+        
+        // Append the script to the container
+        telegramWidgetRef.current.appendChild(script);
+        setTelegramWidgetLoaded(true);
+        console.log('Telegram widget container initialized');
+      } catch (error) {
+        console.error('Error setting up Telegram widget:', error);
+        alert('Error setting up Telegram login. Please try refreshing the page.');
+      }
     }
   }, [showTelegram, telegramWidgetLoaded]);
 
@@ -68,12 +87,26 @@ function NewHomePage() {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       window.handleTelegramAuth = (user) => {
-        console.log('Telegram auth successful:', user);
+        console.log('Telegram auth callback received:', user);
         if (user) {
-          sessionStorage.setItem('telegramSession', JSON.stringify(user));
-          router.push('/scheduler');
+          try {
+            console.log('Storing Telegram session data:', {
+              id: user.id,
+              first_name: user.first_name,
+              username: user.username
+            });
+            sessionStorage.setItem('telegramSession', JSON.stringify(user));
+            router.push('/scheduler');
+          } catch (error) {
+            console.error('Error handling Telegram auth:', error);
+            alert('Error saving Telegram login data. Please try again.');
+          }
+        } else {
+          console.error('No user data received from Telegram');
+          alert('No user data received from Telegram. Please try again.');
         }
       };
+      console.log('Telegram auth handler registered on window object');
     }
   }, [router]);
 
