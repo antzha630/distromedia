@@ -10,6 +10,7 @@ function SchedulerPage() {
   const [articleMetadata, setArticleMetadata] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [telegramSession, setTelegramSession] = useState(null);
+  const [summarizing, setSummarizing] = useState(false);
 
   // Load sessions from sessionStorage on mount
   useEffect(() => {
@@ -65,7 +66,7 @@ function SchedulerPage() {
       alert('Please enter some text to summarize');
       return;
     }
-
+    setSummarizing(true);
     try {
       // LinkedIn summary (professional)
       const resLinkedIn = await fetch('/api/summarize', {
@@ -114,6 +115,8 @@ function SchedulerPage() {
     } catch (error) {
       console.error('Summarize error:', error);
       alert('❌ Failed to generate summary. Please try again.');
+    } finally {
+      setSummarizing(false);
     }
   };
 
@@ -293,7 +296,7 @@ function SchedulerPage() {
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
         />
-        <button onClick={summarize}>Summarize</button>
+        <button onClick={summarize} disabled={summarizing}>{summarizing ? 'Summarizing...' : 'Summarize'}</button>
       </section>
 
       <div style={{ textAlign: 'center', marginTop: '30px', marginBottom: '40px' }}>
