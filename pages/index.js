@@ -43,6 +43,9 @@ function NewHomePage() {
         // Clear any existing content
         telegramWidgetRef.current.innerHTML = '';
         
+        // Add a loading indicator
+        telegramWidgetRef.current.innerHTML = '<div style="padding: 20px; color: #666;">Loading Telegram login...</div>';
+        
         // Create the script element
         const script = document.createElement('script');
         script.async = true;
@@ -58,19 +61,41 @@ function NewHomePage() {
         
         // Add debug logging for widget initialization
         console.log('Initializing Telegram widget with bot:', 'distromedia_bot');
+        console.log('Auth URL:', window.location.origin);
         
         script.onerror = (error) => {
           console.error('Telegram widget failed to load:', error);
-          alert('Failed to load Telegram login widget. Please try refreshing the page.');
+          telegramWidgetRef.current.innerHTML = `
+            <div style="padding: 20px; text-align: center;">
+              <div style="color: #ff4444; margin-bottom: 10px;">❌ Failed to load Telegram login</div>
+              <button 
+                onClick={() => {
+                  setTelegramWidgetLoaded(false);
+                  telegramWidgetRef.current.innerHTML = '';
+                }}
+                style="background: #229ED9; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer;"
+              >
+                Retry
+              </button>
+            </div>
+          `;
         };
         
         script.onload = () => {
           console.log('Telegram widget script loaded');
+          // Clear loading indicator
+          telegramWidgetRef.current.innerHTML = '';
+          
           if (!window.handleTelegramAuth) {
             console.error('handleTelegramAuth not found on window object');
-            alert('Telegram login configuration error. Please refresh the page.');
+            telegramWidgetRef.current.innerHTML = `
+              <div style="padding: 20px; text-align: center; color: #ff4444;">
+                ❌ Telegram login configuration error
+              </div>
+            `;
           } else {
             console.log('Telegram auth handler is properly configured');
+            // The widget should now be visible
           }
         };
         
@@ -80,7 +105,20 @@ function NewHomePage() {
         console.log('Telegram widget container initialized');
       } catch (error) {
         console.error('Error setting up Telegram widget:', error);
-        alert('Error setting up Telegram login. Please try refreshing the page.');
+        telegramWidgetRef.current.innerHTML = `
+          <div style="padding: 20px; text-align: center;">
+            <div style="color: #ff4444; margin-bottom: 10px;">❌ Error setting up Telegram login</div>
+            <button 
+              onClick={() => {
+                setTelegramWidgetLoaded(false);
+                telegramWidgetRef.current.innerHTML = '';
+              }}
+              style="background: #229ED9; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer;"
+            >
+              Retry
+            </button>
+          </div>
+        `;
       }
     }
   }, [showTelegram, telegramWidgetLoaded]);
@@ -199,17 +237,26 @@ function NewHomePage() {
         message += `Bot name: ${data.bot.first_name}\n`;
         message += `Username: @${data.bot.username}\n`;
         message += `Domain: ${data.domainCheck.currentDomain}\n`;
-        message += `HTTPS: ${data.domainCheck.isHttps ? '✅' : '❌'}\n\n`;
+        message += `HTTPS: ${data.domainCheck.isHttps ? '✅' : '❌'}\n`;
+        message += `Accessible: ${data.domainCheck.accessible ? '✅' : '❌'}\n\n`;
         message += `Instructions:\n`;
         data.instructions.forEach((instruction, index) => {
           message += `${instruction}\n`;
         });
+        if (data.troubleshooting) {
+          message += `\nTroubleshooting:\n`;
+          data.troubleshooting.forEach((tip, index) => {
+            message += `${tip}\n`;
+          });
+        }
         alert(message);
       } else {
         let message = `❌ Bot verification failed: ${data.error}\n\n`;
         message += `Debug Info:\n`;
         message += `Token configured: ${data.debugInfo.botTokenConfigured ? '✅' : '❌'}\n`;
-        message += `Current domain: ${data.debugInfo.currentDomain}\n\n`;
+        message += `Token prefix: ${data.debugInfo.botTokenPrefix}\n`;
+        message += `Current domain: ${data.debugInfo.currentDomain}\n`;
+        message += `Protocol: ${data.debugInfo.protocol}\n\n`;
         message += `Instructions:\n`;
         data.instructions.forEach((instruction, index) => {
           message += `${instruction}\n`;
@@ -219,6 +266,36 @@ function NewHomePage() {
     } catch (error) {
       console.error('Bot verification error:', error);
       alert('❌ Failed to verify bot configuration. Check console for details.');
+    }
+  };
+
+  // Add function to test bot token
+  const testTelegramBot = async () => {
+    try {
+      const response = await fetch('/api/telegram/test');
+      const data = await response.json();
+      
+      if (data.success) {
+        let message = `✅ Bot test successful!\n`;
+        message += `Bot name: ${data.bot.first_name}\n`;
+        message += `Username: @${data.bot.username}\n`;
+        message += `Bot ID: ${data.bot.id}\n\n`;
+        message += data.message;
+        alert(message);
+      } else {
+        let message = `❌ Bot test failed: ${data.error}\n\n`;
+        if (data.details) {
+          message += `Details: ${JSON.stringify(data.details, null, 2)}\n\n`;
+        }
+        message += `Instructions:\n`;
+        data.instructions.forEach((instruction, index) => {
+          message += `${instruction}\n`;
+        });
+        alert(message);
+      }
+    } catch (error) {
+      console.error('Bot test error:', error);
+      alert('❌ Failed to test bot. Check console for details.');
     }
   };
 
@@ -319,7 +396,7 @@ function NewHomePage() {
               <h3>Login with Telegram</h3>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
                 <div ref={telegramWidgetRef} />
-                <div style={{ display: 'flex', gap: '10px' }}>
+                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'center' }}>
                   <button 
                     onClick={verifyTelegramBot}
                     style={{ 
@@ -335,11 +412,7 @@ function NewHomePage() {
                     Verify Bot
                   </button>
                   <button 
-                    onClick={() => {
-                      console.log('Current domain:', window.location.origin);
-                      console.log('Bot name:', 'distromedia_bot');
-                      alert('Check browser console for debug info');
-                    }}
+                    onClick={testTelegramBot}
                     style={{ 
                       backgroundColor: '#666',
                       color: 'white',
@@ -350,8 +423,17 @@ function NewHomePage() {
                       fontSize: '14px'
                     }}
                   >
-                    Debug Info
+                    Test Bot
                   </button>
+                </div>
+                <div style={{ fontSize: '0.9em', color: '#666', marginTop: '10px', textAlign: 'left', maxWidth: '280px' }}>
+                  <strong>Troubleshooting:</strong>
+                  <ul style={{ margin: '5px 0', paddingLeft: '20px' }}>
+                    <li>If widget doesn't appear, click "Verify Bot"</li>
+                    <li>Make sure your bot domain is set correctly</li>
+                    <li>Check browser console for errors</li>
+                    <li>Try refreshing the page</li>
+                  </ul>
                 </div>
               </div>
             </section>
