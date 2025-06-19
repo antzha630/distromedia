@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import Script from 'next/script';
 
@@ -12,6 +12,7 @@ if (typeof window !== 'undefined') {
 function NewHomePage() {
   const router = useRouter();
   const name = "Brad";
+  const telegramWidgetRef = useRef(null);
 
   const [blueskyId, setBlueskyId] = useState('');
   const [blueskyPass, setBlueskyPass] = useState('');
@@ -19,6 +20,7 @@ function NewHomePage() {
   const [showLinkedIn, setShowLinkedIn] = useState(true);
   const [showTelegram, setShowTelegram] = useState(true);
   const [telegramSession, setTelegramSession] = useState(null);
+  const [telegramWidgetLoaded, setTelegramWidgetLoaded] = useState(false);
 
   useEffect(() => {
     // Handle LinkedIn OAuth callback
@@ -33,6 +35,47 @@ function NewHomePage() {
       }
     }
   }, [router.query.linkedin]);
+
+  // Load Telegram widget when component mounts and showTelegram is true
+  useEffect(() => {
+    if (showTelegram && telegramWidgetRef.current && !telegramWidgetLoaded) {
+      // Clear any existing content
+      telegramWidgetRef.current.innerHTML = '';
+      
+      // Create the script element
+      const script = document.createElement('script');
+      script.async = true;
+      script.src = 'https://telegram.org/js/telegram-widget.js?7';
+      script.setAttribute('data-telegram-login', 'distromedia_bot');
+      script.setAttribute('data-size', 'large');
+      script.setAttribute('data-userpic', 'true');
+      script.setAttribute('data-request-access', 'write');
+      script.setAttribute('data-onauth', 'handleTelegramAuth(user)');
+      
+      // Append the script to the container
+      telegramWidgetRef.current.appendChild(script);
+      setTelegramWidgetLoaded(true);
+    }
+  }, [showTelegram, telegramWidgetLoaded]);
+
+  // Reset widget loaded state when showTelegram changes
+  useEffect(() => {
+    if (!showTelegram) {
+      setTelegramWidgetLoaded(false);
+      if (telegramWidgetRef.current) {
+        telegramWidgetRef.current.innerHTML = '';
+      }
+    }
+  }, [showTelegram]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (telegramWidgetRef.current) {
+        telegramWidgetRef.current.innerHTML = '';
+      }
+    };
+  }, []);
 
   const loginBluesky = async () => {
     // Basic validation
@@ -185,17 +228,7 @@ function NewHomePage() {
               <h3>Login with Telegram</h3>
               <div style={{ display: 'flex', justifyContent: 'center', margin: '10px 0' }}>
                 <div
-                  dangerouslySetInnerHTML={{
-                    __html: `
-                      <script async src="https://telegram.org/js/telegram-widget.js?7"
-                        data-telegram-login="distromedia_bot"
-                        data-size="large"
-                        data-userpic="true"
-                        data-request-access="write"
-                        data-onauth="handleTelegramAuth(user)"
-                      ></script>
-                    `
-                  }}
+                  ref={telegramWidgetRef}
                 />
               </div>
             </section>
