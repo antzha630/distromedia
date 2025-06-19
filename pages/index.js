@@ -34,7 +34,7 @@ function NewHomePage() {
         console.error('Failed to parse LinkedIn session:', error);
       }
     }
-  }, [router.query.linkedin]);
+  }, [router.query.linkedin, router]);
 
   // Load Telegram widget when component mounts and showTelegram is true
   useEffect(() => {
@@ -166,8 +166,9 @@ function NewHomePage() {
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (telegramWidgetRef.current) {
-        telegramWidgetRef.current.innerHTML = '';
+      const currentRef = telegramWidgetRef.current;
+      if (currentRef) {
+        currentRef.innerHTML = '';
       }
     };
   }, []);

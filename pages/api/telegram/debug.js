@@ -90,7 +90,7 @@ export default async function handler(req, res) {
         '2. In BotFather, use /setdomain and set it to: ' + currentDomain,
         '3. The domain should be accessible via HTTPS',
         '4. Try the login widget again after configuring the domain',
-        '5. If using localhost, make sure you\'re using HTTPS or configure for development'
+        '5. If using localhost, make sure you&apos;re using HTTPS or configure for development'
       ],
       troubleshooting: [
         'If the widget doesn\'t appear: Check browser console for errors',
