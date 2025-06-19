@@ -45,12 +45,19 @@ function NewHomePage() {
       // Create the script element
       const script = document.createElement('script');
       script.async = true;
-      script.src = 'https://telegram.org/js/telegram-widget.js?7';
+      script.src = 'https://telegram.org/js/telegram-widget.js?22';
       script.setAttribute('data-telegram-login', 'distromedia_bot');
       script.setAttribute('data-size', 'large');
       script.setAttribute('data-userpic', 'true');
       script.setAttribute('data-request-access', 'write');
-      script.setAttribute('data-onauth', 'handleTelegramAuth(user)');
+      script.setAttribute('data-auth-url', 'https://distromedia.vercel.app/api/telegram/callback');
+      script.setAttribute('data-radius', '8');
+      script.onerror = (error) => {
+        console.error('Telegram widget failed to load:', error);
+      };
+      script.onload = () => {
+        console.log('Telegram widget loaded successfully');
+      };
       
       // Append the script to the container
       telegramWidgetRef.current.appendChild(script);
