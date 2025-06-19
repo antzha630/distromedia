@@ -173,6 +173,43 @@ function PostPage() {
     setPendingAction(null);
   };
 
+  // Post All logic
+  const postAll = async () => {
+    let results = [];
+    // Bluesky
+    if (blueskySession && blueskySummary && articleUrl && articleMetadata && blueskySummary.length <= 280) {
+      try {
+        await postToBluesky();
+        results.push('✅ Posted to Bluesky!');
+      } catch (e) {
+        results.push('❌ Bluesky post failed');
+      }
+    }
+    // LinkedIn
+    if (linkedinSession && linkedinSummary && articleUrl) {
+      try {
+        await postToLinkedIn();
+        results.push('✅ Posted to LinkedIn!');
+      } catch (e) {
+        results.push('❌ LinkedIn post failed');
+      }
+    }
+    // Telegram (DM only)
+    if (telegramSession && telegramMessage) {
+      try {
+        await postToTelegram(telegramSession.id);
+        results.push('✅ Sent to Telegram!');
+      } catch (e) {
+        results.push('❌ Telegram post failed');
+      }
+    }
+    if (results.length === 0) {
+      alert('No platforms to post to. Please log in and fill out your content.');
+    } else {
+      alert(results.join('\n'));
+    }
+  };
+
   return (
     <main className="container">
       <h1 style={{ marginBottom: '1.2rem', marginTop: '0.5rem' }}>🚀 Post Your Content</h1>
@@ -390,6 +427,15 @@ function PostPage() {
             )}
           </div>
         </section>
+      )}
+
+      {/* Post All Button: show if logged into at least 2 platforms */}
+      {(!!blueskySession + !!linkedinSession + !!telegramSession >= 2) && (
+        <div style={{ textAlign: 'center', marginBottom: 24 }}>
+          <button onClick={postAll} style={{ background: 'linear-gradient(90deg, #3f51b5 0%, #229ED9 100%)', color: '#fff', fontWeight: 700, fontSize: '1.1em', padding: '0.9em 2.2em', borderRadius: 999, boxShadow: '0 2px 8px #0002' }}>
+            Post All
+          </button>
+        </div>
       )}
 
       <div style={{ textAlign: 'center', marginTop: '30px' }}>

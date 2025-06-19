@@ -1,18 +1,6 @@
 {
   "/_app": "pages/_app.js",
-  "/api/bluesky/login": "pages/api/bluesky/login.js",
-  "/api/fetchMetadata": "pages/api/fetchMetadata.js",
-  "/api/bluesky/post": "pages/api/bluesky/post.js",
-  "/api/linkedin/auth": "pages/api/linkedin/auth.js",
-  "/api/linkedin/callback": "pages/api/linkedin/callback.js",
-  "/api/linkedin/post": "pages/api/linkedin/post.js",
-  "/api/summarize": "pages/api/summarize.js",
-  "/api/telegram/post": "pages/api/telegram/post.js",
-  "/api/tweet": "pages/api/tweet.js",
-  "/": "pages/index.html",
-  "/post": "pages/post.html",
-  "/scheduler": "pages/scheduler.html",
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
-  "/404": "pages/404.html"
+  "/": "pages/index.js"
 }
