@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
-import Script from 'next/script';
 
 function NewHomePage() {
   const router = useRouter();
   const name = "Brad";
+  const telegramContainerRef = useRef(null);
 
   const [blueskyId, setBlueskyId] = useState('');
   const [blueskyPass, setBlueskyPass] = useState('');
@@ -48,6 +48,22 @@ function NewHomePage() {
     };
   }, [router]);
 
+  useEffect(() => {
+    if (showTelegram && telegramContainerRef.current) {
+      const script = document.createElement('script');
+      script.src = 'https://telegram.org/js/telegram-widget.js?22';
+      script.async = true;
+      script.setAttribute('data-telegram-login', 'distromedia_bot');
+      script.setAttribute('data-size', 'large');
+      script.setAttribute('data-radius', '8');
+      script.setAttribute('data-userpic', 'true');
+      script.setAttribute('data-request-access', 'write');
+      script.setAttribute('data-onauth', 'onTelegramAuth(user)');
+      
+      telegramContainerRef.current.innerHTML = '';
+      telegramContainerRef.current.appendChild(script);
+    }
+  }, [showTelegram]);
 
   const loginBluesky = async () => {
     // Basic validation
@@ -185,19 +201,7 @@ function NewHomePage() {
                 </svg>
               </div>
               <h3>Login with Telegram</h3>
-               <div style={{ marginTop: '20px' }}>
-                <Script
-                  src="https://telegram.org/js/telegram-widget.js?22"
-                  strategy="lazyOnload"
-                  onLoad={() => console.log('Telegram widget loaded.')}
-                  data-telegram-login="distromedia_bot"
-                  data-size="large"
-                  data-radius="8"
-                  data-userpic="true"
-                  data-request-access="write"
-                  data-onauth="onTelegramAuth(user)"
-                />
-              </div>
+              <div ref={telegramContainerRef} style={{ marginTop: '20px' }}></div>
             </section>
           )}
         </div>
