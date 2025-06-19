@@ -3,7 +3,6 @@
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
   "/api/bluesky/login": "pages/api/bluesky/login.js",
-  "/scheduler": "pages/scheduler.js",
   "/": "pages/index.js",
-  "/post": "pages/post.js"
+  "/scheduler": "pages/scheduler.js"
 }
