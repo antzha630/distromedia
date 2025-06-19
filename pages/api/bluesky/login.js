@@ -11,6 +11,11 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Missing credentials' });
   }
 
+  // Log the identifier format for debugging (without the password)
+  console.log('Login attempt with identifier:', identifier);
+  console.log('App password length:', appPassword.length);
+  console.log('App password format check:', appPassword.includes('-'));
+
   const agent = new BskyAgent({ service: 'https://bsky.social' });
 
   try {
@@ -35,9 +40,30 @@ export default async function handler(req, res) {
     });
   } catch (err) {
     console.error('Login failed:', err);
+    console.error('Error details:', {
+      message: err.message,
+      error: err.error,
+      status: err.status,
+      headers: err.headers
+    });
+    
+    // Provide more specific error messages
+    let errorMessage = 'Login failed';
+    if (err.error === 'AuthenticationRequired') {
+      errorMessage = 'Invalid identifier or app password. Please check your credentials.';
+    } else if (err.status === 401) {
+      errorMessage = 'Authentication failed. Please verify your username and app password.';
+    } else if (err.message) {
+      errorMessage = err.message;
+    }
+    
     res.status(500).json({
       success: false,
-      error: err.message || 'Login failed',
+      error: errorMessage,
+      details: {
+        error: err.error,
+        status: err.status
+      }
     });
   }
 }

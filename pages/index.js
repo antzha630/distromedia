@@ -35,12 +35,37 @@ function NewHomePage() {
   }, [router.query.linkedin]);
 
   const loginBluesky = async () => {
+    // Basic validation
+    if (!blueskyId.trim()) {
+      alert('❌ Please enter your Bluesky handle or email');
+      return;
+    }
+    if (!blueskyPass.trim()) {
+      alert('❌ Please enter your app password');
+      return;
+    }
+
+    // Sanitize the identifier - remove invisible characters and normalize
+    let cleanIdentifier = blueskyId.trim();
+    
+    // Remove any invisible characters (like zero-width spaces, etc.)
+    cleanIdentifier = cleanIdentifier.replace(/[\u200B-\u200D\uFEFF]/g, '');
+    
+    // Remove @ symbol if present at the beginning
+    cleanIdentifier = cleanIdentifier.replace(/^@/, '');
+    
+    // Remove any trailing dots or spaces
+    cleanIdentifier = cleanIdentifier.replace(/[.\s]+$/, '');
+
+    console.log('Original identifier:', JSON.stringify(blueskyId));
+    console.log('Cleaned identifier:', JSON.stringify(cleanIdentifier));
+
     const res = await fetch('/api/bluesky/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        identifier: blueskyId,
-        appPassword: blueskyPass,
+        identifier: cleanIdentifier,
+        appPassword: blueskyPass.trim(),
       }),
     });
 
@@ -48,11 +73,14 @@ function NewHomePage() {
     if (data.success) {
       alert('✅ Logged into Bluesky');
       sessionStorage.setItem('blueskySession', JSON.stringify(data.session));
-      sessionStorage.setItem('blueskyHandle', blueskyId);
+      sessionStorage.setItem('blueskyHandle', cleanIdentifier);
       if (data.avatarUrl) sessionStorage.setItem('blueskyAvatarUrl', data.avatarUrl);
       router.push('/scheduler');
     } else {
-      alert('❌ Bluesky login failed');
+      // Show more specific error message
+      const errorMsg = data.error || 'Login failed';
+      alert(`❌ Bluesky login failed: ${errorMsg}`);
+      console.error('Bluesky login error details:', data.details);
     }
   };
 
