@@ -49,10 +49,12 @@ function NewHomePage() {
         script.src = 'https://telegram.org/js/telegram-widget.js?22';
         script.setAttribute('data-telegram-login', 'distromedia_bot');
         script.setAttribute('data-size', 'large');
+        script.setAttribute('data-radius', '8');
         script.setAttribute('data-userpic', 'true');
         script.setAttribute('data-request-access', 'write');
         script.setAttribute('data-onauth', 'handleTelegramAuth');
-        script.setAttribute('data-auth-url', 'https://distromedia.vercel.app');
+        script.setAttribute('data-auth-url', window.location.origin);
+        script.setAttribute('data-lang', 'en');
         
         // Add debug logging for widget initialization
         console.log('Initializing Telegram widget with bot:', 'distromedia_bot');
@@ -88,6 +90,9 @@ function NewHomePage() {
     if (typeof window !== 'undefined') {
       window.handleTelegramAuth = (user) => {
         console.log('Telegram auth callback received:', user);
+        console.log('Current domain:', window.location.origin);
+        console.log('Bot name configured:', 'distromedia_bot');
+        
         if (user) {
           try {
             console.log('Storing Telegram session data:', {
@@ -186,13 +191,30 @@ function NewHomePage() {
   // Add function to verify bot configuration
   const verifyTelegramBot = async () => {
     try {
-      const response = await fetch('/api/telegram/verify');
+      const response = await fetch('/api/telegram/debug');
       const data = await response.json();
       
       if (data.success) {
-        alert(`✅ Bot verified successfully!\nBot name: ${data.bot.first_name}\nUsername: @${data.bot.username}`);
+        let message = `✅ Bot verified successfully!\n`;
+        message += `Bot name: ${data.bot.first_name}\n`;
+        message += `Username: @${data.bot.username}\n`;
+        message += `Domain: ${data.domainCheck.currentDomain}\n`;
+        message += `HTTPS: ${data.domainCheck.isHttps ? '✅' : '❌'}\n\n`;
+        message += `Instructions:\n`;
+        data.instructions.forEach((instruction, index) => {
+          message += `${instruction}\n`;
+        });
+        alert(message);
       } else {
-        alert(`❌ Bot verification failed: ${data.error}`);
+        let message = `❌ Bot verification failed: ${data.error}\n\n`;
+        message += `Debug Info:\n`;
+        message += `Token configured: ${data.debugInfo.botTokenConfigured ? '✅' : '❌'}\n`;
+        message += `Current domain: ${data.debugInfo.currentDomain}\n\n`;
+        message += `Instructions:\n`;
+        data.instructions.forEach((instruction, index) => {
+          message += `${instruction}\n`;
+        });
+        alert(message);
       }
     } catch (error) {
       console.error('Bot verification error:', error);
@@ -297,20 +319,40 @@ function NewHomePage() {
               <h3>Login with Telegram</h3>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
                 <div ref={telegramWidgetRef} />
-                <button 
-                  onClick={verifyTelegramBot}
-                  style={{ 
-                    backgroundColor: '#229ED9',
-                    color: 'white',
-                    border: 'none',
-                    padding: '8px 16px',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    fontSize: '14px'
-                  }}
-                >
-                  Verify Bot Configuration
-                </button>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <button 
+                    onClick={verifyTelegramBot}
+                    style={{ 
+                      backgroundColor: '#229ED9',
+                      color: 'white',
+                      border: 'none',
+                      padding: '8px 16px',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      fontSize: '14px'
+                    }}
+                  >
+                    Verify Bot
+                  </button>
+                  <button 
+                    onClick={() => {
+                      console.log('Current domain:', window.location.origin);
+                      console.log('Bot name:', 'distromedia_bot');
+                      alert('Check browser console for debug info');
+                    }}
+                    style={{ 
+                      backgroundColor: '#666',
+                      color: 'white',
+                      border: 'none',
+                      padding: '8px 16px',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      fontSize: '14px'
+                    }}
+                  >
+                    Debug Info
+                  </button>
+                </div>
               </div>
             </section>
           )}
