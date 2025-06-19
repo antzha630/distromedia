@@ -50,8 +50,7 @@ function NewHomePage() {
       script.setAttribute('data-size', 'large');
       script.setAttribute('data-userpic', 'true');
       script.setAttribute('data-request-access', 'write');
-      script.setAttribute('data-auth-url', 'https://distromedia.vercel.app/api/telegram/callback');
-      script.setAttribute('data-radius', '8');
+      script.setAttribute('data-onauth', 'handleTelegramAuth');
       script.onerror = (error) => {
         console.error('Telegram widget failed to load:', error);
       };
@@ -64,6 +63,19 @@ function NewHomePage() {
       setTelegramWidgetLoaded(true);
     }
   }, [showTelegram, telegramWidgetLoaded]);
+
+  // Add global handler for Telegram auth
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.handleTelegramAuth = (user) => {
+        console.log('Telegram auth successful:', user);
+        if (user) {
+          sessionStorage.setItem('telegramSession', JSON.stringify(user));
+          router.push('/scheduler');
+        }
+      };
+    }
+  }, [router]);
 
   // Reset widget loaded state when showTelegram changes
   useEffect(() => {

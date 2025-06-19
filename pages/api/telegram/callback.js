@@ -2,12 +2,20 @@ import crypto from 'crypto';
 
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 
+// Add debug logging
+console.log('Bot token available:', !!TELEGRAM_BOT_TOKEN);
+if (!TELEGRAM_BOT_TOKEN) {
+  console.error('TELEGRAM_BOT_TOKEN is not set in environment variables');
+}
+
 function checkSignature(data) {
   const { hash, ...rest } = data;
   const checkString = Object.keys(rest)
     .sort()
     .map(k => `${k}=${rest[k]}`)
     .join('\n');
+  
+  console.log('Checking signature for data:', rest);
   
   const secretKey = crypto
     .createHash('sha256')
@@ -19,10 +27,19 @@ function checkSignature(data) {
     .update(checkString)
     .digest('hex');
   
+  console.log('Generated HMAC:', hmac);
+  console.log('Received hash:', hash);
+  
   return hmac === hash;
 }
 
 export default async function handler(req, res) {
+  console.log('Received callback request:', {
+    method: req.method,
+    query: req.query,
+    headers: req.headers
+  });
+
   // Only allow GET requests
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -54,6 +71,8 @@ export default async function handler(req, res) {
       photo_url: data.photo_url,
       auth_date: data.auth_date
     };
+
+    console.log('Authentication successful, redirecting with session:', session);
 
     // Store in session storage and redirect to scheduler
     res.redirect(`/scheduler?telegramSession=${encodeURIComponent(JSON.stringify(session))}`);
