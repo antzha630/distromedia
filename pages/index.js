@@ -176,11 +176,12 @@ function NewHomePage() {
 
           {showTelegram && (
             <section className="card" style={{ minWidth: 300, textAlign: 'center', boxShadow: '0 4px 24px rgba(0,0,0,0.15)', borderRadius: '16px' }}>
-              <img 
-                src="/images/telegram-profile.png"
-                alt="Telegram Logo"
-                style={{ display: 'block', margin: '0 auto 20px auto', width: '50px' }}
-              />
+              <div style={{ display: 'flex', justifyContent: 'center', margin: '0 auto 20px auto' }}>
+                <svg width="50" height="50" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="120" cy="120" r="120" fill="#229ED9"/>
+                  <path d="M180.5 72.5L157.5 180.5C155.5 188.5 150.5 190.5 143.5 186.5L110.5 161.5L94.5 176.5C92.5 178.5 91 180 87.5 180L90.5 145.5L157.5 84.5C160.5 81.5 157.5 80 153.5 83.5L77.5 140.5L44.5 130.5C37.5 128.5 37.5 123.5 46.5 120.5L172.5 74.5C178.5 72.5 182.5 75.5 180.5 72.5Z" fill="white"/>
+                </svg>
+              </div>
               <h3>Login with Telegram</h3>
               <div style={{ display: 'flex', justifyContent: 'center', margin: '10px 0' }}>
                 <div
