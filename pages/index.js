@@ -39,12 +39,14 @@ function NewHomePage() {
   // Load Telegram widget when component mounts and showTelegram is true
   useEffect(() => {
     if (showTelegram && telegramWidgetRef.current && !telegramWidgetLoaded) {
+      const currentRef = telegramWidgetRef.current;
+      
       try {
         // Clear any existing content
-        telegramWidgetRef.current.innerHTML = '';
+        currentRef.innerHTML = '';
         
         // Add a loading indicator
-        telegramWidgetRef.current.innerHTML = '<div style="padding: 20px; color: #666;">Loading Telegram login...</div>';
+        currentRef.innerHTML = '<div style="padding: 20px; color: #666;">Loading Telegram login...</div>';
         
         // Create the script element
         const script = document.createElement('script');
@@ -65,34 +67,40 @@ function NewHomePage() {
         
         script.onerror = (error) => {
           console.error('Telegram widget failed to load:', error);
-          telegramWidgetRef.current.innerHTML = `
-            <div style="padding: 20px; text-align: center;">
-              <div style="color: #ff4444; margin-bottom: 10px;">❌ Failed to load Telegram login</div>
-              <button 
-                onClick={() => {
-                  setTelegramWidgetLoaded(false);
-                  telegramWidgetRef.current.innerHTML = '';
-                }}
-                style="background: #229ED9; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer;"
-              >
-                Retry
-              </button>
-            </div>
-          `;
+          if (currentRef) {
+            currentRef.innerHTML = `
+              <div style="padding: 20px; text-align: center;">
+                <div style="color: #ff4444; margin-bottom: 10px;">❌ Failed to load Telegram login</div>
+                <button 
+                  onClick={() => {
+                    setTelegramWidgetLoaded(false);
+                    if (currentRef) currentRef.innerHTML = '';
+                  }}
+                  style="background: #229ED9; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer;"
+                >
+                  Retry
+                </button>
+              </div>
+            `;
+          }
         };
         
         script.onload = () => {
           console.log('Telegram widget script loaded');
           // Clear loading indicator
-          telegramWidgetRef.current.innerHTML = '';
+          if (currentRef) {
+            currentRef.innerHTML = '';
+          }
           
           if (!window.handleTelegramAuth) {
             console.error('handleTelegramAuth not found on window object');
-            telegramWidgetRef.current.innerHTML = `
-              <div style="padding: 20px; text-align: center; color: #ff4444;">
-                ❌ Telegram login configuration error
-              </div>
-            `;
+            if (currentRef) {
+              currentRef.innerHTML = `
+                <div style="padding: 20px; text-align: center; color: #ff4444;">
+                  ❌ Telegram login configuration error
+                </div>
+              `;
+            }
           } else {
             console.log('Telegram auth handler is properly configured');
             // The widget should now be visible
@@ -100,25 +108,27 @@ function NewHomePage() {
         };
         
         // Append the script to the container
-        telegramWidgetRef.current.appendChild(script);
+        currentRef.appendChild(script);
         setTelegramWidgetLoaded(true);
         console.log('Telegram widget container initialized');
       } catch (error) {
         console.error('Error setting up Telegram widget:', error);
-        telegramWidgetRef.current.innerHTML = `
-          <div style="padding: 20px; text-align: center;">
-            <div style="color: #ff4444; margin-bottom: 10px;">❌ Error setting up Telegram login</div>
-            <button 
-              onClick={() => {
-                setTelegramWidgetLoaded(false);
-                telegramWidgetRef.current.innerHTML = '';
-              }}
-              style="background: #229ED9; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer;"
-            >
-              Retry
-            </button>
-          </div>
-        `;
+        if (currentRef) {
+          currentRef.innerHTML = `
+            <div style="padding: 20px; text-align: center;">
+              <div style="color: #ff4444; margin-bottom: 10px;">❌ Error setting up Telegram login</div>
+              <button 
+                onClick={() => {
+                  setTelegramWidgetLoaded(false);
+                  if (currentRef) currentRef.innerHTML = '';
+                }}
+                style="background: #229ED9; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer;"
+              >
+                Retry
+              </button>
+            </div>
+          `;
+        }
       }
     }
   }, [showTelegram, telegramWidgetLoaded]);
@@ -157,8 +167,9 @@ function NewHomePage() {
   useEffect(() => {
     if (!showTelegram) {
       setTelegramWidgetLoaded(false);
-      if (telegramWidgetRef.current) {
-        telegramWidgetRef.current.innerHTML = '';
+      const currentRef = telegramWidgetRef.current;
+      if (currentRef) {
+        currentRef.innerHTML = '';
       }
     }
   }, [showTelegram]);
@@ -430,7 +441,7 @@ function NewHomePage() {
                 <div style={{ fontSize: '0.9em', color: '#666', marginTop: '10px', textAlign: 'left', maxWidth: '280px' }}>
                   <strong>Troubleshooting:</strong>
                   <ul style={{ margin: '5px 0', paddingLeft: '20px' }}>
-                    <li>If widget doesn't appear, click "Verify Bot"</li>
+                    <li>If widget doesn&apos;t appear, click &quot;Verify Bot&quot;</li>
                     <li>Make sure your bot domain is set correctly</li>
                     <li>Check browser console for errors</li>
                     <li>Try refreshing the page</li>
