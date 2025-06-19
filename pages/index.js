@@ -1,26 +1,15 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Script from 'next/script';
 
-if (typeof window !== 'undefined') {
-  window.handleTelegramAuth = (user) => {
-    sessionStorage.setItem('telegramSession', JSON.stringify(user));
-    window.location.href = '/scheduler';
-  };
-}
-
 function NewHomePage() {
   const router = useRouter();
-  const name = "Brad";
-  const telegramWidgetRef = useRef(null);
-
+  
   const [blueskyId, setBlueskyId] = useState('');
   const [blueskyPass, setBlueskyPass] = useState('');
   const [showBluesky, setShowBluesky] = useState(true);
   const [showLinkedIn, setShowLinkedIn] = useState(true);
   const [showTelegram, setShowTelegram] = useState(true);
-  const [telegramSession, setTelegramSession] = useState(null);
-  const [telegramWidgetLoaded, setTelegramWidgetLoaded] = useState(false);
 
   useEffect(() => {
     // Handle LinkedIn OAuth callback
@@ -34,155 +23,29 @@ function NewHomePage() {
         console.error('Failed to parse LinkedIn session:', error);
       }
     }
-  }, [router.query.linkedin, router]);
 
-  // Load Telegram widget when component mounts and showTelegram is true
-  useEffect(() => {
-    if (showTelegram && telegramWidgetRef.current && !telegramWidgetLoaded) {
-      const currentRef = telegramWidgetRef.current;
-      
-      try {
-        // Clear any existing content
-        currentRef.innerHTML = '';
-        
-        // Add a loading indicator
-        currentRef.innerHTML = '<div style="padding: 20px; color: #666;">Loading Telegram login...</div>';
-        
-        // Create the script element
-        const script = document.createElement('script');
-        script.async = true;
-        script.src = 'https://telegram.org/js/telegram-widget.js?22';
-        script.setAttribute('data-telegram-login', 'distromedia_bot');
-        script.setAttribute('data-size', 'large');
-        script.setAttribute('data-radius', '8');
-        script.setAttribute('data-userpic', 'true');
-        script.setAttribute('data-request-access', 'write');
-        script.setAttribute('data-onauth', 'handleTelegramAuth');
-        script.setAttribute('data-auth-url', window.location.origin);
-        script.setAttribute('data-lang', 'en');
-        
-        // Add debug logging for widget initialization
-        console.log('Initializing Telegram widget with bot:', 'distromedia_bot');
-        console.log('Auth URL:', window.location.origin);
-        
-        script.onerror = (error) => {
-          console.error('Telegram widget failed to load:', error);
-          if (currentRef) {
-            currentRef.innerHTML = `
-              <div style="padding: 20px; text-align: center;">
-                <div style="color: #ff4444; margin-bottom: 10px;">❌ Failed to load Telegram login</div>
-                <button 
-                  onClick={() => {
-                    setTelegramWidgetLoaded(false);
-                    if (currentRef) currentRef.innerHTML = '';
-                  }}
-                  style="background: #229ED9; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer;"
-                >
-                  Retry
-                </button>
-              </div>
-            `;
-          }
-        };
-        
-        script.onload = () => {
-          console.log('Telegram widget script loaded');
-          // Clear loading indicator
-          if (currentRef) {
-            currentRef.innerHTML = '';
-          }
-          
-          if (!window.handleTelegramAuth) {
-            console.error('handleTelegramAuth not found on window object');
-            if (currentRef) {
-              currentRef.innerHTML = `
-                <div style="padding: 20px; text-align: center; color: #ff4444;">
-                  ❌ Telegram login configuration error
-                </div>
-              `;
-            }
-          } else {
-            console.log('Telegram auth handler is properly configured');
-            // The widget should now be visible
-          }
-        };
-        
-        // Append the script to the container
-        currentRef.appendChild(script);
-        setTelegramWidgetLoaded(true);
-        console.log('Telegram widget container initialized');
-      } catch (error) {
-        console.error('Error setting up Telegram widget:', error);
-        if (currentRef) {
-          currentRef.innerHTML = `
-            <div style="padding: 20px; text-align: center;">
-              <div style="color: #ff4444; margin-bottom: 10px;">❌ Error setting up Telegram login</div>
-              <button 
-                onClick={() => {
-                  setTelegramWidgetLoaded(false);
-                  if (currentRef) currentRef.innerHTML = '';
-                }}
-                style="background: #229ED9; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer;"
-              >
-                Retry
-              </button>
-            </div>
-          `;
+    // Define the Telegram callback function on the window object
+    window.onTelegramAuth = (user) => {
+      console.log('Telegram auth callback received:', user);
+      if (user) {
+        try {
+          sessionStorage.setItem('telegramSession', JSON.stringify(user));
+          router.push('/scheduler');
+        } catch (error) {
+          console.error('Error saving Telegram login data:', error);
+          alert('Error saving Telegram login data. Please try again.');
         }
-      }
-    }
-  }, [showTelegram, telegramWidgetLoaded]);
-
-  // Add global handler for Telegram auth
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      window.handleTelegramAuth = (user) => {
-        console.log('Telegram auth callback received:', user);
-        console.log('Current domain:', window.location.origin);
-        console.log('Bot name configured:', 'distromedia_bot');
-        
-        if (user) {
-          try {
-            console.log('Storing Telegram session data:', {
-              id: user.id,
-              first_name: user.first_name,
-              username: user.username
-            });
-            sessionStorage.setItem('telegramSession', JSON.stringify(user));
-            router.push('/scheduler');
-          } catch (error) {
-            console.error('Error handling Telegram auth:', error);
-            alert('Error saving Telegram login data. Please try again.');
-          }
-        } else {
-          console.error('No user data received from Telegram');
-          alert('No user data received from Telegram. Please try again.');
-        }
-      };
-      console.log('Telegram auth handler registered on window object');
-    }
-  }, [router]);
-
-  // Reset widget loaded state when showTelegram changes
-  useEffect(() => {
-    if (!showTelegram) {
-      setTelegramWidgetLoaded(false);
-      const currentRef = telegramWidgetRef.current;
-      if (currentRef) {
-        currentRef.innerHTML = '';
-      }
-    }
-  }, [showTelegram]);
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      const currentRef = telegramWidgetRef.current;
-      if (currentRef) {
-        currentRef.innerHTML = '';
+      } else {
+        console.error('No user data received from Telegram');
+        alert('No user data received from Telegram. Please try again.');
       }
     };
-  }, []);
+
+    // Cleanup the global function when the component unmounts
+    return () => {
+      delete window.onTelegramAuth;
+    };
+  }, [router]);
 
   const loginBluesky = async () => {
     // Basic validation
@@ -208,7 +71,7 @@ function NewHomePage() {
     cleanIdentifier = cleanIdentifier.replace(/[.\s]+$/, '');
 
     console.log('Original identifier:', JSON.stringify(blueskyId));
-    console.log('Cleaned identifier:', JSON.stringify(cleanIdentifier));
+    console.log('Cleaned identifier:', cleanIdentifier);
 
     const res = await fetch('/api/bluesky/login', {
       method: 'POST',
@@ -238,220 +101,139 @@ function NewHomePage() {
     window.location.href = '/api/linkedin/auth';
   };
 
-  // Add function to verify bot configuration
-  const verifyTelegramBot = async () => {
-    try {
-      const response = await fetch('/api/telegram/debug');
-      const data = await response.json();
-      
-      if (data.success) {
-        let message = `✅ Bot verified successfully!\n`;
-        message += `Bot name: ${data.bot.first_name}\n`;
-        message += `Username: @${data.bot.username}\n`;
-        message += `Domain: ${data.domainCheck.currentDomain}\n`;
-        message += `HTTPS: ${data.domainCheck.isHttps ? '✅' : '❌'}\n`;
-        message += `Accessible: ${data.domainCheck.accessible ? '✅' : '❌'}\n\n`;
-        message += `Instructions:\n`;
-        data.instructions.forEach((instruction, index) => {
-          message += `${instruction}\n`;
-        });
-        if (data.troubleshooting) {
-          message += `\nTroubleshooting:\n`;
-          data.troubleshooting.forEach((tip, index) => {
-            message += `${tip}\n`;
-          });
-        }
-        alert(message);
-      } else {
-        let message = `❌ Bot verification failed: ${data.error}\n\n`;
-        message += `Debug Info:\n`;
-        message += `Token configured: ${data.debugInfo.botTokenConfigured ? '✅' : '❌'}\n`;
-        message += `Token prefix: ${data.debugInfo.botTokenPrefix}\n`;
-        message += `Current domain: ${data.debugInfo.currentDomain}\n`;
-        message += `Protocol: ${data.debugInfo.protocol}\n\n`;
-        message += `Instructions:\n`;
-        data.instructions.forEach((instruction, index) => {
-          message += `${instruction}\n`;
-        });
-        alert(message);
-      }
-    } catch (error) {
-      console.error('Bot verification error:', error);
-      alert('❌ Failed to verify bot configuration. Check console for details.');
-    }
-  };
-
-  // Add function to test bot token
-  const testTelegramBot = async () => {
-    try {
-      const response = await fetch('/api/telegram/test');
-      const data = await response.json();
-      
-      if (data.success) {
-        let message = `✅ Bot test successful!\n`;
-        message += `Bot name: ${data.bot.first_name}\n`;
-        message += `Username: @${data.bot.username}\n`;
-        message += `Bot ID: ${data.bot.id}\n\n`;
-        message += data.message;
-        alert(message);
-      } else {
-        let message = `❌ Bot test failed: ${data.error}\n\n`;
-        if (data.details) {
-          message += `Details: ${JSON.stringify(data.details, null, 2)}\n\n`;
-        }
-        message += `Instructions:\n`;
-        data.instructions.forEach((instruction, index) => {
-          message += `${instruction}\n`;
-        });
-        alert(message);
-      }
-    } catch (error) {
-      console.error('Bot test error:', error);
-      alert('❌ Failed to test bot. Check console for details.');
-    }
-  };
-
   return (
     <main className="container">
-      <div style={{ textAlign: 'center', marginTop: '50px' }}>
-        <h1>Welcome back, {name}</h1>
-        <p style={{ fontSize: '1.5em', marginTop: '20px' }}>DistroMedia content scheduler</p>
-
-        <div style={{ margin: '30px 0 40px 0', display: 'flex', justifyContent: 'center', gap: '32px' }}>
-          <label style={{ fontWeight: 600, fontSize: '1.1em', display: 'flex', alignItems: 'center', gap: 8 }}>
-            <input
-              type="checkbox"
-              checked={showBluesky}
-              onChange={e => setShowBluesky(e.target.checked)}
-              style={{ width: 18, height: 18 }}
-            />
-            Bluesky
-          </label>
-          <label style={{ fontWeight: 600, fontSize: '1.1em', display: 'flex', alignItems: 'center', gap: 8 }}>
-            <input
-              type="checkbox"
-              checked={showLinkedIn}
-              onChange={e => setShowLinkedIn(e.target.checked)}
-              style={{ width: 18, height: 18 }}
-            />
-            LinkedIn
-          </label>
-          <label style={{ fontWeight: 600, fontSize: '1.1em', display: 'flex', alignItems: 'center', gap: 8 }}>
-            <input
-              type="checkbox"
-              checked={showTelegram}
-              onChange={e => setShowTelegram(e.target.checked)}
-              style={{ width: 18, height: 18 }}
-            />
-            Telegram
-          </label>
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '32px' }}>
-          {showBluesky && (
-            <section className="card" style={{ minWidth: 300, textAlign: 'center', boxShadow: '0 4px 24px rgba(0,0,0,0.15)', borderRadius: '16px' }}>
-              <img 
-                src="/images/Bluesky_Logo.png"
-                alt="BlueSky Logo"
-                style={{ display: 'block', margin: '0 auto 20px auto', width: '50px' }}
-              />
-              <h3>Login with BlueSky</h3>
-              <input
-                placeholder="Bluesky handle (e.g. @distromedia.bsky.social)"
-                value={blueskyId}
-                onChange={(e) => setBlueskyId(e.target.value)}
-                style={{ display: 'block', marginBottom: '10px' }}
-              />
-              <input
-                type="password"
-                placeholder="App Password"
-                value={blueskyPass}
-                onChange={(e) => setBlueskyPass(e.target.value)}
-                style={{ display: 'block', marginBottom: '10px' }}
-              />
-              <div style={{ fontSize: '0.95em', color: '#aaa', marginBottom: '10px' }}>
-                <span>
-                  <b>Note:</b> You must use a <a href="https://bsky.app/settings/app-passwords" target="_blank" rel="noopener noreferrer" style={{ color: '#3f51b5', textDecoration: 'underline' }}>Bluesky App Password</a> (not your main password).
-                </span>
-              </div>
-              <button onClick={loginBluesky}>Log in to BlueSky</button>
-            </section>
-          )}
-
-          {showLinkedIn && (
-            <section className="card" style={{ minWidth: 300, textAlign: 'center', boxShadow: '0 4px 24px rgba(0,0,0,0.15)', borderRadius: '16px' }}>
-              <div 
-                style={{ 
-                  color: '#0A66C2', 
-                  fontSize: '24px', 
-                  fontWeight: 'bold',
-                  marginBottom: '20px'
-                }}
-              >
-                LinkedIn
-              </div>
-              <h3>Login with LinkedIn</h3>
-              <button onClick={loginLinkedIn}>
-                Log in with LinkedIn
-              </button>
-            </section>
-          )}
-
-          {showTelegram && (
-            <section className="card" style={{ minWidth: 300, textAlign: 'center', boxShadow: '0 4px 24px rgba(0,0,0,0.15)', borderRadius: '16px' }}>
-              <div style={{ display: 'flex', justifyContent: 'center', margin: '0 auto 20px auto' }}>
-                <svg width="50" height="50" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="120" cy="120" r="120" fill="#229ED9"/>
-                  <path d="M180.5 72.5L157.5 180.5C155.5 188.5 150.5 190.5 143.5 186.5L110.5 161.5L94.5 176.5C92.5 178.5 91 180 87.5 180L90.5 145.5L157.5 84.5C160.5 81.5 157.5 80 153.5 83.5L77.5 140.5L44.5 130.5C37.5 128.5 37.5 123.5 46.5 120.5L172.5 74.5C178.5 72.5 182.5 75.5 180.5 72.5Z" fill="white"/>
-                </svg>
-              </div>
-              <h3>Login with Telegram</h3>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
-                <div ref={telegramWidgetRef} />
-                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'center' }}>
-                  <button 
-                    onClick={verifyTelegramBot}
-                    style={{ 
-                      backgroundColor: '#229ED9',
-                      color: 'white',
-                      border: 'none',
-                      padding: '8px 16px',
-                      borderRadius: '8px',
-                      cursor: 'pointer',
-                      fontSize: '14px'
-                    }}
-                  >
-                    Verify Bot
-                  </button>
-                  <button 
-                    onClick={testTelegramBot}
-                    style={{ 
-                      backgroundColor: '#666',
-                      color: 'white',
-                      border: 'none',
-                      padding: '8px 16px',
-                      borderRadius: '8px',
-                      cursor: 'pointer',
-                      fontSize: '14px'
-                    }}
-                  >
-                    Test Bot
-                  </button>
-                </div>
-                <div style={{ fontSize: '0.9em', color: '#666', marginTop: '10px', textAlign: 'left', maxWidth: '280px' }}>
-                  <strong>Troubleshooting:</strong>
-                  <ul style={{ margin: '5px 0', paddingLeft: '20px' }}>
-                    <li>If widget doesn&apos;t appear, click &quot;Verify Bot&quot;</li>
-                    <li>Make sure your bot domain is set correctly</li>
-                    <li>Check browser console for errors</li>
-                    <li>Try refreshing the page</li>
-                  </ul>
-                </div>
-              </div>
-            </section>
-          )}
-        </div>
+      <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+        <h1 style={{ marginBottom: '0.5rem' }}>distromedia</h1>
+        <p>one-click cross-platform posting</p>
       </div>
+
+      <div className="card-container">
+        {showLinkedIn && (
+          <section className="card">
+            <div className="logo-container linkedin-logo">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20.5 2h-17A1.5 1.5 0 002 3.5v17A1.5 1.5 0 003.5 22h17a1.5 1.5 0 001.5-1.5v-17A1.5 1.5 0 0020.5 2zM8 19H5v-9h3zM6.5 8.25A1.75 1.75 0 118.25 6.5 1.75 1.75 0 016.5 8.25zM19 19h-3v-4.75c0-1.4-1.2-2.5-2.5-2.5S11 12.85 11 14.25V19h-3v-9h3v1.39c.78-1.45 2.3-2.39 3.5-2.39 2.48 0 4.5 2.22 4.5 5v5z"></path>
+              </svg>
+            </div>
+            <h3>Login with LinkedIn</h3>
+            <button onClick={loginLinkedIn} className="linkedin-button">
+              Log in with LinkedIn
+            </button>
+          </section>
+        )}
+
+        {showBluesky && (
+          <section className="card">
+            <div className="logo-container bluesky-logo">
+              <svg width="50" height="50" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M128 256C198.693 256 256 198.693 256 128C256 57.3075 198.693 0 128 0C57.3075 0 0 57.3075 0 128C0 198.693 57.3075 256 128 256Z" fill="#1185FE"/>
+                <path d="M198.813 68.25C189.625 79.0625 188.5 95.8438 188.5 95.8438C188.5 95.8438 189.594 95.8125 190.125 95.7812C203.375 94.625 210.844 87.625 214.531 82.7188C218.219 77.8125 217.156 72.3125 216.781 70.1875C216.031 65.9375 210.25 64.9062 210.25 64.9062C198.219 63.1875 192.313 66.8125 192.313 66.8125C192.313 66.8125 193.313 65.625 194.281 64.9375C201.219 59.8438 192.844 54.3438 185.875 57.4375C178.906 60.5312 181.031 68.625 181.031 68.625L178.969 77.8438C178.969 77.8438 171.031 71.9375 161.313 70.3125C148.563 68.1875 136.875 70.375 136.875 70.375C136.875 70.375 125.844 67.875 111.406 72.4375C96.9688 77 88.0625 87.125 88.0625 87.125C88.0625 87.125 81.2188 84.125 76.5312 85.5C71.8438 86.875 69.1875 91.8125 69.1875 91.8125C65.3438 100.875 74.5312 104.906 74.5312 104.906C74.5312 104.906 80.4062 102.344 82.5312 100.281C82.5312 100.281 83.5625 110.531 75.3438 119.531C67.125 128.531 59.4375 132.844 59.4375 132.844C59.4375 132.844 64.5312 143.25 77.5312 148.812C90.5312 154.375 101.531 152.938 101.531 152.938C101.531 152.938 105.906 160.812 113.844 163.5C121.781 166.188 128.438 165.438 128.438 165.438L150.469 135.25C150.469 135.25 167.219 148.438 178.375 151.031C189.531 153.625 198.813 149.344 198.813 149.344C198.813 149.344 213.719 143.062 216.906 128.531C220.094 114 207.844 103.5 207.844 103.5C207.844 103.5 214.781 96.5312 214.531 89.2812C214.281 82.0312 206.813 76.125 206.813 76.125C206.813 76.125 208.031 70.8125 198.813 68.25Z" fill="white"/>
+              </svg>
+            </div>
+            <h3>Login with Bluesky</h3>
+            <input
+              type="text"
+              value={blueskyId}
+              onChange={(e) => setBlueskyId(e.target.value)}
+              placeholder="handle or email"
+              className="input-field"
+            />
+            <input
+              type="password"
+              value={blueskyPass}
+              onChange={(e) => setBlueskyPass(e.target.value)}
+              placeholder="app password"
+              className="input-field"
+            />
+            <button onClick={loginBluesky} className="bluesky-button">Log in with Bluesky</button>
+          </section>
+        )}
+
+        {showTelegram && (
+          <section className="card">
+            <div className="logo-container telegram-logo">
+              <svg width="50" height="50" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="120" cy="120" r="120" fill="#229ED9"/>
+                <path d="M180.5 72.5L157.5 180.5C155.5 188.5 150.5 190.5 143.5 186.5L110.5 161.5L94.5 176.5C92.5 178.5 91 180 87.5 180L90.5 145.5L157.5 84.5C160.5 81.5 157.5 80 153.5 83.5L77.5 140.5L44.5 130.5C37.5 128.5 37.5 123.5 46.5 120.5L172.5 74.5C178.5 72.5 182.5 75.5 180.5 72.5Z" fill="white"/>
+              </svg>
+            </div>
+            <h3>Login with Telegram</h3>
+            <div style={{ marginTop: '20px' }}>
+              <Script
+                src="https://telegram.org/js/telegram-widget.js?22"
+                strategy="lazyOnload"
+                data-telegram-login="distromedia_bot"
+                data-size="large"
+                data-radius="8"
+                data-userpic="true"
+                data-request-access="write"
+                data-onauth="onTelegramAuth(user)"
+              />
+            </div>
+          </section>
+        )}
+      </div>
+
+      <style jsx>{`
+        .container {
+          padding: 20px;
+          max-width: 1200px;
+          margin: 0 auto;
+        }
+        .card-container {
+          display: flex;
+          justify-content: center;
+          gap: 32px;
+          flex-wrap: wrap;
+        }
+        .card {
+          background: #fff;
+          padding: 24px;
+          text-align: center;
+          box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+          border-radius: 16px;
+          min-width: 300px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: space-between;
+        }
+        .logo-container {
+          margin-bottom: 20px;
+        }
+        .logo-container svg {
+          width: 50px;
+          height: 50px;
+        }
+        h3 {
+          margin-bottom: 20px;
+          font-size: 1.2rem;
+          font-weight: 600;
+        }
+        .input-field {
+          width: 100%;
+          padding: 10px;
+          margin-bottom: 10px;
+          border-radius: 8px;
+          border: 1px solid #ddd;
+          box-sizing: border-box;
+        }
+        button {
+          width: 100%;
+          color: white;
+          border: none;
+          padding: 12px 16px;
+          border-radius: 8px;
+          cursor: pointer;
+          font-weight: 600;
+          transition: background-color 0.2s;
+        }
+        .linkedin-button { background-color: #0A66C2; }
+        .linkedin-button:hover { background-color: #004182; }
+        .bluesky-button { background-color: #1185FE; }
+        .bluesky-button:hover { background-color: #005fcc; }
+      `}</style>
     </main>
   );
 }
