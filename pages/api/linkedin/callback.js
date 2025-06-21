@@ -43,6 +43,10 @@ export default async function handler(req, res) {
 
     if (!tokenData.access_token) {
       console.error('Token exchange failed:', tokenData);
+      console.error('Response status:', tokenResponse.status);
+      console.error('Redirect URI used:', `${baseUrl}/api/linkedin/callback`);
+      console.error('Client ID present:', !!process.env.LINKEDIN_CLIENT_ID);
+      console.error('Client Secret present:', !!process.env.LINKEDIN_CLIENT_SECRET);
       return res.redirect(`/?error=${encodeURIComponent('Failed to get access token')}`);
     }
 

@@ -9,8 +9,13 @@ export default async function handler(req, res) {
       // Store state in a cookie for verification
       res.setHeader('Set-Cookie', `linkedin_oauth_state=${state}; Path=/; HttpOnly; SameSite=Lax`);
 
+      // Determine the base URL for redirects (same as callback)
+      const baseUrl = process.env.VERCEL_URL 
+        ? `https://${process.env.VERCEL_URL}` 
+        : `${req.headers['x-forwarded-proto'] || 'http'}://${req.headers.host}`;
+
       // Define the redirect URI explicitly
-      const redirectUri = `${req.headers['x-forwarded-proto'] || 'http'}://${req.headers.host}/api/linkedin/callback`;
+      const redirectUri = `${baseUrl}/api/linkedin/callback`;
 
       // Validate client ID
       if (!process.env.LINKEDIN_CLIENT_ID) {
