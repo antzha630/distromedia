@@ -5,19 +5,38 @@ const openai = new OpenAI({
   apiKey: "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",
 });
 
+// Platform-specific prompts
+const platformPrompts = {
+  linkedin: {
+    role: "You are a professional LinkedIn content creator. Write business-focused, thought-provoking posts that demonstrate expertise and industry knowledge. Use a formal, professional tone suitable for B2B audiences. Focus on insights, trends, and professional value. Keep posts under 280 characters. No emojis or hashtags.",
+    maxLength: 280
+  },
+  bluesky: {
+    role: "You are a Bluesky content creator. Write casual, conversational posts that feel personal and authentic. Use a friendly, approachable tone that encourages engagement and discussion. Bluesky users appreciate genuine, thoughtful content. Keep posts under 280 characters. No emojis or hashtags.",
+    maxLength: 280
+  },
+  telegram: {
+    role: "You are a Telegram content creator. Write concise, direct posts that get straight to the point. Telegram users prefer clear, actionable information. Use a straightforward, informative tone that works well for quick reading. Keep posts under 280 characters. No emojis or hashtags.",
+    maxLength: 280
+  }
+};
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', ['POST']);
     return res.status(405).end(`Method ${req.method} Not Allowed`);
   }
 
-  const { text } = req.body;
+  const { text, platform = 'linkedin' } = req.body;
 
   if (!text) {
     return res.status(400).json({ error: 'Text is required in the request body' });
   }
 
-  console.log('Received text to summarize:', text.substring(0, 100) + '...');
+  // Get platform-specific settings
+  const platformConfig = platformPrompts[platform] || platformPrompts.linkedin;
+
+  console.log(`Generating ${platform} content for:`, text.substring(0, 100) + '...');
 
   try {
     const completion = await openai.chat.completions.create({
@@ -25,7 +44,7 @@ export default async function handler(req, res) {
       messages: [
         {
           role: "system",
-          content: "You are a professional content creator that writes clean, engaging social media posts. Create concise summaries that work well across all social media platforms. Keep posts under 280 characters for Twitter/Bluesky compatibility. Write in a professional tone without emojis, hashtags, or trendy language. Focus on clear, informative content that provides value to readers."
+          content: platformConfig.role
         },
         {
           role: "user",
@@ -48,9 +67,9 @@ export default async function handler(req, res) {
     summary = summary.replace(/#\w+/g, '');
     summary = summary.replace(/[^\w\s.,!?-]/g, '');
     
-    // Ensure the summary is under 280 characters
-    if (summary.length > 280) {
-      summary = summary.substring(0, 277) + '...';
+    // Ensure the summary is under the platform's character limit
+    if (summary.length > platformConfig.maxLength) {
+      summary = summary.substring(0, platformConfig.maxLength - 3) + '...';
     }
 
     res.status(200).json({ summary });

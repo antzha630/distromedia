@@ -73,7 +73,8 @@ function SchedulerPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          text: `Write a professional, engaging LinkedIn post summarizing this article for a business audience. Use a formal tone and highlight key insights.\n\n${inputText}`
+          text: inputText,
+          platform: 'linkedin'
         }),
       });
       const dataLinkedIn = await resLinkedIn.json();
@@ -83,17 +84,19 @@ function SchedulerPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          text: `Write a casual, concise, and engaging post for Bluesky (like a tweet). Use a friendly, informal tone and keep it short.\n\n${inputText}`
+          text: inputText,
+          platform: 'bluesky'
         }),
       });
       const dataBluesky = await resBluesky.json();
 
-      // Telegram summary (friendly, direct, suitable for a Telegram message)
+      // Telegram summary (direct and concise)
       const resTelegram = await fetch('/api/summarize', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          text: `Write a friendly, direct, and concise message for Telegram summarizing this article. Use a conversational tone and keep it under 200 characters.\n\n${inputText}`
+          text: inputText,
+          platform: 'telegram'
         }),
       });
       const dataTelegram = await resTelegram.json();
