@@ -37,11 +37,20 @@ function checkSignature(data) {
 
 export default async function handler(req, res) {
   console.log('=== TELEGRAM CALLBACK RECEIVED ===');
+  console.log('Timestamp:', new Date().toISOString());
   console.log('Method:', req.method);
   console.log('URL:', req.url);
+  console.log('Full URL:', req.headers.host + req.url);
+  console.log('User Agent:', req.headers['user-agent']);
+  console.log('Referer:', req.headers.referer);
+  console.log('Origin:', req.headers.origin);
   console.log('Headers:', JSON.stringify(req.headers, null, 2));
   console.log('Query params:', JSON.stringify(req.query, null, 2));
   console.log('Body:', JSON.stringify(req.body, null, 2));
+  console.log('Environment check:');
+  console.log('- TELEGRAM_BOT_TOKEN:', process.env.TELEGRAM_BOT_TOKEN ? 'SET' : 'NOT SET');
+  console.log('- VERCEL_URL:', process.env.VERCEL_URL);
+  console.log('- NODE_ENV:', process.env.NODE_ENV);
   console.log('================================');
 
   // If no query parameters, return a test response
@@ -52,7 +61,14 @@ export default async function handler(req, res) {
       timestamp: new Date().toISOString(),
       method: req.method,
       url: req.url,
-      note: 'This endpoint expects Telegram authentication data as query parameters'
+      note: 'This endpoint expects Telegram authentication data as query parameters',
+      debug: {
+        headers: req.headers,
+        environment: {
+          TELEGRAM_BOT_TOKEN: process.env.TELEGRAM_BOT_TOKEN ? 'SET' : 'NOT SET',
+          VERCEL_URL: process.env.VERCEL_URL
+        }
+      }
     });
   }
 
@@ -75,6 +91,7 @@ export default async function handler(req, res) {
     try {
       const data = req.query;
       console.log('Processing GET request with data:', data);
+      console.log('Data keys received:', Object.keys(data));
       
       // Check if we have the required data
       if (!data.id || !data.first_name || !data.hash) {
@@ -82,11 +99,14 @@ export default async function handler(req, res) {
           hasId: !!data.id, 
           hasFirstName: !!data.first_name, 
           hasHash: !!data.hash,
-          receivedKeys: Object.keys(data)
+          receivedKeys: Object.keys(data),
+          receivedValues: data
         });
         return res.status(400).json({ 
           error: 'Missing required authentication data',
-          received: Object.keys(data)
+          received: Object.keys(data),
+          receivedValues: data,
+          expected: ['id', 'first_name', 'hash', 'auth_date', 'username', 'photo_url', 'last_name']
         });
       }
       
