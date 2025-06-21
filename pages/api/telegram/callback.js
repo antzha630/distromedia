@@ -44,6 +44,18 @@ export default async function handler(req, res) {
   console.log('Body:', JSON.stringify(req.body, null, 2));
   console.log('================================');
 
+  // If no query parameters, return a test response
+  if (Object.keys(req.query).length === 0) {
+    console.log('No query parameters received - this might be a test visit');
+    return res.status(200).json({
+      message: 'Telegram callback endpoint is reachable',
+      timestamp: new Date().toISOString(),
+      method: req.method,
+      url: req.url,
+      note: 'This endpoint expects Telegram authentication data as query parameters'
+    });
+  }
+
   // Handle webhook updates (POST requests)
   if (req.method === 'POST') {
     try {
