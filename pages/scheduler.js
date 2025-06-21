@@ -318,6 +318,12 @@ function SchedulerPage() {
           )}
         </section>
       )}
+
+      {!telegramSession && (
+        <section className="card" style={{ marginTop: '20px' }}>
+            <p>To post to Telegram, please <a href="/">log in</a> on the homepage.</p>
+        </section>
+      )}
     </main>
   );
 }

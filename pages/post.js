@@ -326,10 +326,10 @@ function PostPage() {
       {blueskySession && (
         <section className="card" style={{ background: '#181c22', color: '#f0f0f0', maxWidth: 600, margin: '0 auto 32px auto', boxShadow: '0 2px 12px #0002' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 8 }}>
-            <img src={blueskyAvatarUrl || '/images/bluesky-profile.png'} alt="Bluesky Profile" style={{ width: 48, height: 48, borderRadius: '50%', background: '#222', objectFit: 'cover' }} />
+            <img src={blueskyAvatarUrl || '/images/Bluesky_Logo.png'} alt="Bluesky Profile" style={{ width: 48, height: 48, borderRadius: '50%', background: '#222', objectFit: 'cover' }} />
             <div>
-              <div style={{ fontWeight: 700, fontSize: '1.1em' }}>{blueskyUserHandle || 'Bluesky User'}</div>
-              <div style={{ color: '#aaa', fontSize: '0.95em' }}>@{blueskyUserHandle.replace(/^@/, '')}</div>
+              <div style={{ fontWeight: 700, fontSize: '1.1em' }}>{blueskySession.handle || 'Bluesky User'}</div>
+              <div style={{ color: '#aaa', fontSize: '0.95em' }}>@{blueskySession.handle || 'handle'}</div>
             </div>
           </div>
           <textarea
