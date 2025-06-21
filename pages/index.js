@@ -12,6 +12,14 @@ function NewHomePage() {
   const [showLinkedIn, setShowLinkedIn] = useState(true);
   const [showTelegram, setShowTelegram] = useState(true);
   const [telegramWidgetLoaded, setTelegramWidgetLoaded] = useState(false);
+  const [debugLogs, setDebugLogs] = useState([]);
+
+  const addDebugLog = (message, type = 'info') => {
+    const timestamp = new Date().toLocaleTimeString();
+    const log = { timestamp, message, type };
+    setDebugLogs(prev => [...prev, log]);
+    console.log(`[${timestamp}] ${message}`);
+  };
 
   useEffect(() => {
     // Handle LinkedIn OAuth callback
@@ -41,8 +49,11 @@ function NewHomePage() {
 
   useEffect(() => {
     if (showTelegram && telegramContainerRef.current && !telegramWidgetLoaded) {
+      addDebugLog('=== TELEGRAM WIDGET LOADING START ===', 'debug');
+      
       // Clear the container first
       telegramContainerRef.current.innerHTML = '';
+      addDebugLog('Container cleared', 'info');
       
       // Create the script element
       const script = document.createElement('script');
@@ -60,25 +71,26 @@ function NewHomePage() {
       script.setAttribute('data-redirect-url', redirectUrl);
       
       // Debug logging
-      console.log('Telegram widget configuration:');
-      console.log('- Bot name: distromedia_bot');
-      console.log('- Current origin:', currentOrigin);
-      console.log('- Redirect URL:', redirectUrl);
-      console.log('- Full widget URL:', `${currentOrigin}/api/telegram/callback`);
+      addDebugLog(`Bot name: distromedia_bot`, 'info');
+      addDebugLog(`Current origin: ${currentOrigin}`, 'info');
+      addDebugLog(`Redirect URL: ${redirectUrl}`, 'info');
+      addDebugLog(`Script src: ${script.src}`, 'info');
       
       // Add error handling
-      script.onerror = () => {
-        console.error('Failed to load Telegram widget script');
+      script.onerror = (error) => {
+        addDebugLog(`❌ Failed to load Telegram widget script: ${error}`, 'error');
         setTelegramWidgetLoaded(false);
       };
       
       script.onload = () => {
-        console.log('Telegram widget script loaded successfully');
+        addDebugLog('✅ Telegram widget script loaded successfully', 'success');
         setTelegramWidgetLoaded(true);
       };
       
       // Append the script to the container
       telegramContainerRef.current.appendChild(script);
+      addDebugLog('Script appended to container', 'info');
+      addDebugLog('=== TELEGRAM WIDGET LOADING END ===', 'debug');
     }
   }, [showTelegram, telegramWidgetLoaded]);
 
@@ -245,6 +257,43 @@ function NewHomePage() {
               )}
             </section>
           )}
+        </div>
+      </div>
+
+      {/* Debug Panel */}
+      <div style={{
+        position: 'fixed',
+        bottom: '10px',
+        left: '10px',
+        width: 'calc(100% - 20px)',
+        maxWidth: '800px',
+        maxHeight: '250px',
+        overflowY: 'auto',
+        backgroundColor: 'rgba(0, 0, 0, 0.85)',
+        color: '#fff',
+        padding: '10px',
+        borderRadius: '8px',
+        fontFamily: 'monospace',
+        fontSize: '12px',
+        zIndex: 9999,
+        border: '1px solid #555'
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px', paddingBottom: '5px', borderBottom: '1px solid #555' }}>
+          <h4 style={{ margin: 0, color: '#00ffdd' }}>Live Debug Panel</h4>
+          <button onClick={() => setDebugLogs([])} style={{ background: '#333', border: '1px solid #555', color: '#fff', borderRadius: '4px', cursor: 'pointer', padding: '2px 8px' }}>Clear</button>
+        </div>
+        <div>
+          {debugLogs.length === 0 && <div style={{ color: '#888' }}>Waiting for logs...</div>}
+          {debugLogs.map((log, index) => (
+            <div key={index} style={{
+              color: log.type === 'error' ? '#ff7b7b' : log.type === 'success' ? '#7bff7b' : log.type === 'debug' ? '#6c9cff' : '#fff',
+              borderBottom: '1px solid #444',
+              padding: '2px 0',
+              wordBreak: 'break-all'
+            }}>
+              <span style={{ color: '#888' }}>[{log.timestamp}]</span> {log.message}
+            </div>
+          )).reverse()}
         </div>
       </div>
     </main>
