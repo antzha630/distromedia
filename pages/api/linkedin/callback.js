@@ -1,6 +1,11 @@
 export default async function handler(req, res) {
   const { code, state, error } = req.query;
 
+  // Determine the base URL for redirects
+  const baseUrl = process.env.VERCEL_URL 
+    ? `https://${process.env.VERCEL_URL}` 
+    : `${req.headers['x-forwarded-proto'] || 'http'}://${req.headers.host}`;
+
   // Check for OAuth errors
   if (error) {
     console.error('LinkedIn OAuth error:', error);
@@ -38,7 +43,7 @@ export default async function handler(req, res) {
 
     if (!tokenData.access_token) {
       console.error('Token exchange failed:', tokenData);
-      return res.status(400).json({ error: 'Failed to get access token' });
+      return res.redirect(`/?error=${encodeURIComponent('Failed to get access token')}`);
     }
 
     // Get user profile
@@ -53,7 +58,7 @@ export default async function handler(req, res) {
 
     if (!profileData.id) {
       console.error('Profile fetch failed:', profileData);
-      return res.status(400).json({ error: 'Failed to get user profile' });
+      return res.redirect(`/?error=${encodeURIComponent('Failed to get user profile')}`);
     }
 
     // Get profile picture
@@ -91,6 +96,6 @@ export default async function handler(req, res) {
     res.redirect(redirectUrl);
   } catch (error) {
     console.error('LinkedIn callback error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.redirect(`/?error=${encodeURIComponent('Internal server error')}`);
   }
 } 
