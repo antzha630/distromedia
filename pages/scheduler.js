@@ -235,7 +235,7 @@ function SchedulerPage() {
         {telegramSession && (
           <>
             <span style={{ color: '#229ED9', fontWeight: 600 }}>
-              {telegramSession.first_name || ''} {telegramSession.last_name || ''}
+              {telegramSession.firstName || telegramSession.first_name || ''} {telegramSession.lastName || telegramSession.last_name || ''}
               {telegramSession.username ? ` (@${telegramSession.username})` : ''}
             </span> on Telegram
             <br />
