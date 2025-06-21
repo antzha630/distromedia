@@ -40,33 +40,6 @@ function NewHomePage() {
   }, [router]);
 
   useEffect(() => {
-    // Define the Telegram callback function on the window object
-    window.onTelegramAuth = (user) => {
-      console.log('Telegram auth callback received:', user);
-      if (user) {
-        try {
-          // Store the session
-          sessionStorage.setItem('telegramSession', JSON.stringify(user));
-          
-          // Redirect to scheduler
-          router.push('/scheduler');
-        } catch (error) {
-          console.error('Error saving Telegram login data:', error);
-          alert('Error saving Telegram login data. Please try again.');
-        }
-      } else {
-        console.error('No user data received from Telegram');
-        alert('No user data received from Telegram. Please try again.');
-      }
-    };
-
-    // Cleanup the global function when the component unmounts
-    return () => {
-      delete window.onTelegramAuth;
-    };
-  }, [router]);
-
-  useEffect(() => {
     if (showTelegram && telegramContainerRef.current && !telegramWidgetLoaded) {
       // Clear the container first
       telegramContainerRef.current.innerHTML = '';
@@ -80,7 +53,10 @@ function NewHomePage() {
       script.setAttribute('data-radius', '8');
       script.setAttribute('data-userpic', 'true');
       script.setAttribute('data-request-access', 'write');
-      script.setAttribute('data-onauth', 'onTelegramAuth(user)');
+      
+      // Use direct redirect instead of callback
+      const currentOrigin = window.location.origin;
+      script.setAttribute('data-redirect-url', `${currentOrigin}/api/telegram/callback`);
       
       // Add error handling
       script.onerror = () => {
