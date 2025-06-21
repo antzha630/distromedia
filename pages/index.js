@@ -11,6 +11,7 @@ function NewHomePage() {
   const [showBluesky, setShowBluesky] = useState(true);
   const [showLinkedIn, setShowLinkedIn] = useState(true);
   const [showTelegram, setShowTelegram] = useState(true);
+  const [telegramWidgetLoaded, setTelegramWidgetLoaded] = useState(false);
 
   useEffect(() => {
     // Handle LinkedIn OAuth callback
@@ -25,12 +26,29 @@ function NewHomePage() {
       }
     }
 
+    // Handle Telegram callback
+    const telegramData = router.query.telegramSession;
+    if (telegramData) {
+      try {
+        const session = JSON.parse(decodeURIComponent(telegramData));
+        sessionStorage.setItem('telegramSession', JSON.stringify(session));
+        router.push('/scheduler');
+      } catch (error) {
+        console.error('Failed to parse Telegram session:', error);
+      }
+    }
+  }, [router]);
+
+  useEffect(() => {
     // Define the Telegram callback function on the window object
     window.onTelegramAuth = (user) => {
       console.log('Telegram auth callback received:', user);
       if (user) {
         try {
+          // Store the session
           sessionStorage.setItem('telegramSession', JSON.stringify(user));
+          
+          // Redirect to scheduler
           router.push('/scheduler');
         } catch (error) {
           console.error('Error saving Telegram login data:', error);
@@ -49,7 +67,11 @@ function NewHomePage() {
   }, [router]);
 
   useEffect(() => {
-    if (showTelegram && telegramContainerRef.current) {
+    if (showTelegram && telegramContainerRef.current && !telegramWidgetLoaded) {
+      // Clear the container first
+      telegramContainerRef.current.innerHTML = '';
+      
+      // Create the script element
       const script = document.createElement('script');
       script.src = 'https://telegram.org/js/telegram-widget.js?22';
       script.async = true;
@@ -60,10 +82,21 @@ function NewHomePage() {
       script.setAttribute('data-request-access', 'write');
       script.setAttribute('data-onauth', 'onTelegramAuth(user)');
       
-      telegramContainerRef.current.innerHTML = '';
+      // Add error handling
+      script.onerror = () => {
+        console.error('Failed to load Telegram widget script');
+        setTelegramWidgetLoaded(false);
+      };
+      
+      script.onload = () => {
+        console.log('Telegram widget script loaded successfully');
+        setTelegramWidgetLoaded(true);
+      };
+      
+      // Append the script to the container
       telegramContainerRef.current.appendChild(script);
     }
-  }, [showTelegram]);
+  }, [showTelegram, telegramWidgetLoaded]);
 
   const loginBluesky = async () => {
     // Basic validation
@@ -104,6 +137,13 @@ function NewHomePage() {
 
   const loginLinkedIn = () => {
     window.location.href = '/api/linkedin/auth';
+  };
+
+  const reloadTelegramWidget = () => {
+    setTelegramWidgetLoaded(false);
+    if (telegramContainerRef.current) {
+      telegramContainerRef.current.innerHTML = '';
+    }
   };
 
   return (
@@ -201,7 +241,24 @@ function NewHomePage() {
                 </svg>
               </div>
               <h3>Login with Telegram</h3>
-              <div ref={telegramContainerRef} style={{ marginTop: '20px' }}></div>
+              <div ref={telegramContainerRef} style={{ marginTop: '20px', minHeight: '50px' }}></div>
+              {!telegramWidgetLoaded && (
+                <div style={{ marginTop: '10px' }}>
+                  <button 
+                    onClick={reloadTelegramWidget}
+                    style={{ 
+                      padding: '8px 16px', 
+                      fontSize: '0.9em', 
+                      backgroundColor: '#f8f9fa', 
+                      border: '1px solid #ddd',
+                      borderRadius: '4px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Reload Widget
+                  </button>
+                </div>
+              )}
             </section>
           )}
         </div>

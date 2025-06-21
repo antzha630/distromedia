@@ -1059,16 +1059,6 @@ eval("\nObject.defineProperty(exports, \"__esModule\", ({\n    value: true\n}));
 
 eval("module.exports = __webpack_require__(/*! ./dist/client/router */ \"(pages-dir-node)/./node_modules/next/dist/client/router.js\")\n//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiKHBhZ2VzLWRpci1ub2RlKS8uL25vZGVfbW9kdWxlcy9uZXh0L3JvdXRlci5qcyIsIm1hcHBpbmdzIjoiQUFBQSw4SEFBZ0QiLCJzb3VyY2VzIjpbIi9Vc2Vycy9hbnRob255ei9EZXNrdG9wL2Rpc3Ryb21lZGlhL25vZGVfbW9kdWxlcy9uZXh0L3JvdXRlci5qcyJdLCJzb3VyY2VzQ29udGVudCI6WyJtb2R1bGUuZXhwb3J0cyA9IHJlcXVpcmUoJy4vZGlzdC9jbGllbnQvcm91dGVyJylcbiJdLCJuYW1lcyI6W10sImlnbm9yZUxpc3QiOlswXSwic291cmNlUm9vdCI6IiJ9\n//# sourceURL=webpack-internal:///(pages-dir-node)/./node_modules/next/router.js\n");
 
-/***/ }),
-
-/***/ "(pages-dir-node)/./node_modules/next/script.js":
-/*!*************************************!*\
-  !*** ./node_modules/next/script.js ***!
-  \*************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-eval("module.exports = __webpack_require__(/*! ./dist/client/script */ \"(pages-dir-node)/./node_modules/next/dist/client/script.js\")\n//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiKHBhZ2VzLWRpci1ub2RlKS8uL25vZGVfbW9kdWxlcy9uZXh0L3NjcmlwdC5qcyIsIm1hcHBpbmdzIjoiQUFBQSw4SEFBZ0QiLCJzb3VyY2VzIjpbIi9Vc2Vycy9hbnRob255ei9EZXNrdG9wL2Rpc3Ryb21lZGlhL25vZGVfbW9kdWxlcy9uZXh0L3NjcmlwdC5qcyJdLCJzb3VyY2VzQ29udGVudCI6WyJtb2R1bGUuZXhwb3J0cyA9IHJlcXVpcmUoJy4vZGlzdC9jbGllbnQvc2NyaXB0JylcbiJdLCJuYW1lcyI6W10sImlnbm9yZUxpc3QiOlswXSwic291cmNlUm9vdCI6IiJ9\n//# sourceURL=webpack-internal:///(pages-dir-node)/./node_modules/next/script.js\n");
-
 /***/ })
 
 };
