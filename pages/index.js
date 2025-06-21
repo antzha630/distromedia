@@ -4,14 +4,23 @@ import { useRouter } from 'next/router';
 function NewHomePage() {
   const router = useRouter();
   const name = "Brad";
-  const telegramContainerRef = useRef(null);
 
   const [blueskyId, setBlueskyId] = useState('');
   const [blueskyPass, setBlueskyPass] = useState('');
   const [showBluesky, setShowBluesky] = useState(true);
   const [showLinkedIn, setShowLinkedIn] = useState(true);
   const [showTelegram, setShowTelegram] = useState(true);
-  const [telegramWidgetLoaded, setTelegramWidgetLoaded] = useState(false);
+  
+  // New Telegram API Login States
+  const [telegramPhone, setTelegramPhone] = useState('');
+  const [telegramCode, setTelegramCode] = useState('');
+  const [telegramPhoneCodeHash, setTelegramPhoneCodeHash] = useState('');
+  const [telegramStep, setTelegramStep] = useState('phone'); // 'phone' or 'code'
+  const [telegramLoading, setTelegramLoading] = useState(false);
+  const [telegramError, setTelegramError] = useState('');
+
+  // This ref is no longer needed for the widget, but can be kept for future use or removed.
+  const telegramContainerRef = useRef(null);
   const [debugLogs, setDebugLogs] = useState([]);
 
   const addDebugLog = (message, type = 'info') => {
@@ -34,7 +43,7 @@ function NewHomePage() {
       }
     }
 
-    // Handle Telegram callback
+    // Handle potential Telegram callback data if needed in the future
     const telegramData = router.query.telegramSession;
     if (telegramData) {
       try {
@@ -47,53 +56,92 @@ function NewHomePage() {
     }
   }, [router]);
 
-  useEffect(() => {
-    if (showTelegram && telegramContainerRef.current && !telegramWidgetLoaded) {
-      addDebugLog('=== TELEGRAM WIDGET LOADING START ===', 'debug');
-      
-      // Clear the container first
-      telegramContainerRef.current.innerHTML = '';
-      addDebugLog('Container cleared', 'info');
-      
-      // Create the script element
-      const script = document.createElement('script');
-      script.src = 'https://telegram.org/js/telegram-widget.js?22';
-      script.async = true;
-      // Using the new test bot to isolate the issue
-      script.setAttribute('data-telegram-login', 'distroappv2_bot'); // This must match the username of your NEW bot
-      script.setAttribute('data-size', 'large');
-      script.setAttribute('data-radius', '8');
-      script.setAttribute('data-userpic', 'true');
-      script.setAttribute('data-request-access', 'write');
-      
-      // Use direct redirect instead of callback
-      const currentOrigin = window.location.origin;
-      const redirectUrl = `${currentOrigin}/api/telegram/callback`;
-      script.setAttribute('data-redirect-url', redirectUrl);
-      
-      // Debug logging
-      addDebugLog(`Bot name: ${script.getAttribute('data-telegram-login')}`, 'info');
-      addDebugLog(`Current origin: ${currentOrigin}`, 'info');
-      addDebugLog(`Redirect URL: ${redirectUrl}`, 'info');
-      addDebugLog(`Script src: ${script.src}`, 'info');
-      
-      // Add error handling
-      script.onerror = (error) => {
-        addDebugLog(`❌ Failed to load Telegram widget script: ${error}`, 'error');
-        setTelegramWidgetLoaded(false);
-      };
-      
-      script.onload = () => {
-        addDebugLog('✅ Telegram widget script loaded successfully', 'success');
-        setTelegramWidgetLoaded(true);
-      };
-      
-      // Append the script to the container
-      telegramContainerRef.current.appendChild(script);
-      addDebugLog('Script appended to container', 'info');
-      addDebugLog('=== TELEGRAM WIDGET LOADING END ===', 'debug');
+  const handleTelegramPhoneSubmit = async (e) => {
+    e.preventDefault();
+    if (!telegramPhone.trim()) {
+      setTelegramError('Please enter your phone number in international format.');
+      return;
     }
-  }, [showTelegram, telegramWidgetLoaded]);
+
+    setTelegramLoading(true);
+    setTelegramError('');
+    addDebugLog('Sending phone number to server...');
+
+    try {
+      const res = await fetch('/api/telegram/send-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: telegramPhone.trim() }),
+      });
+
+      const data = await res.json();
+      
+      if (res.ok && data.success) {
+        addDebugLog('Successfully received phoneCodeHash from server.');
+        setTelegramPhoneCodeHash(data.phoneCodeHash);
+        setTelegramStep('code');
+        setTelegramError('');
+      } else {
+        addDebugLog(`Error sending code: ${data.error}`, 'error');
+        setTelegramError(data.error || 'Failed to send verification code. Please check the number and try again.');
+      }
+    } catch (error) {
+      addDebugLog(`Network error: ${error.message}`, 'error');
+      setTelegramError('A network error occurred. Please try again.');
+    } finally {
+      setTelegramLoading(false);
+    }
+  };
+
+  const handleTelegramCodeSubmit = async (e) => {
+    e.preventDefault();
+    if (!telegramCode.trim()) {
+      setTelegramError('Please enter the verification code.');
+      return;
+    }
+
+    setTelegramLoading(true);
+    setTelegramError('');
+    addDebugLog('Sending verification code to server...');
+
+    try {
+      const res = await fetch('/api/telegram/verify-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          phone: telegramPhone.trim(),
+          code: telegramCode.trim(),
+          phoneCodeHash: telegramPhoneCodeHash,
+        }),
+      });
+
+      const data = await res.json();
+      
+      if (res.ok && data.success) {
+        addDebugLog('Login successful! Redirecting...');
+        sessionStorage.setItem('telegramSession', JSON.stringify(data.session));
+        router.push('/scheduler');
+      } else {
+        addDebugLog(`Error verifying code: ${data.error}`, 'error');
+        setTelegramError(data.error || 'Invalid code. Please try again.');
+      }
+    } catch (error) {
+      addDebugLog(`Network error: ${error.message}`, 'error');
+      setTelegramError('A network error occurred. Please try again.');
+    } finally {
+      setTelegramLoading(false);
+    }
+  };
+  
+  const resetTelegramLogin = () => {
+    setTelegramPhone('');
+    setTelegramCode('');
+    setTelegramStep('phone');
+    setTelegramError('');
+    setTelegramLoading(false);
+    setTelegramPhoneCodeHash('');
+    addDebugLog('Telegram login reset.');
+  };
 
   const loginBluesky = async () => {
     // Basic validation
@@ -134,13 +182,6 @@ function NewHomePage() {
 
   const loginLinkedIn = () => {
     window.location.href = '/api/linkedin/auth';
-  };
-
-  const reloadTelegramWidget = () => {
-    setTelegramWidgetLoaded(false);
-    if (telegramContainerRef.current) {
-      telegramContainerRef.current.innerHTML = '';
-    }
   };
 
   return (
@@ -238,22 +279,63 @@ function NewHomePage() {
                 </svg>
               </div>
               <h3>Login with Telegram</h3>
-              <div ref={telegramContainerRef} style={{ marginTop: '20px', minHeight: '50px' }}></div>
-              {!telegramWidgetLoaded && (
-                <div style={{ marginTop: '10px' }}>
+              
+              {telegramStep === 'phone' ? (
+                <form onSubmit={handleTelegramPhoneSubmit}>
+                  <p style={{ fontSize: '0.9em', color: '#666', marginBottom: '10px' }}>
+                    A verification code will be sent to your Telegram app.
+                  </p>
+                  <input
+                    type="tel"
+                    placeholder="Phone number (e.g., +1234567890)"
+                    value={telegramPhone}
+                    onChange={(e) => setTelegramPhone(e.target.value)}
+                    style={{ display: 'block', marginBottom: '10px', width: '100%', padding: '8px', boxSizing: 'border-box' }}
+                    disabled={telegramLoading}
+                  />
                   <button 
-                    onClick={reloadTelegramWidget}
-                    style={{ 
-                      padding: '8px 16px', 
-                      fontSize: '0.9em', 
-                      backgroundColor: '#f8f9fa', 
-                      border: '1px solid #ddd',
-                      borderRadius: '4px',
-                      cursor: 'pointer'
-                    }}
+                    type="submit" 
+                    style={{width: '100%', padding: '10px'}}
+                    disabled={telegramLoading}
                   >
-                    Reload Widget
+                    {telegramLoading ? 'Sending Code...' : 'Send Code'}
                   </button>
+                </form>
+              ) : (
+                <form onSubmit={handleTelegramCodeSubmit}>
+                  <div style={{ marginBottom: '10px', fontSize: '0.9em', color: '#666' }}>
+                    A code was sent to your Telegram app for the number {telegramPhone}.
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Enter 5-digit code"
+                    value={telegramCode}
+                    onChange={(e) => setTelegramCode(e.target.value)}
+                    style={{ display: 'block', marginBottom: '10px', width: '100%', padding: '8px', boxSizing: 'border-box' }}
+                    disabled={telegramLoading}
+                    maxLength={5}
+                    autoComplete="off"
+                  />
+                  <button 
+                    type="submit" 
+                    style={{width: '100%', padding: '10px', marginBottom: '10px'}}
+                    disabled={telegramLoading}
+                  >
+                    {telegramLoading ? 'Verifying...' : 'Log In'}
+                  </button>
+                  <button 
+                    type="button" 
+                    onClick={resetTelegramLogin}
+                    style={{width: '100%', padding: '8px', fontSize: '0.9em', backgroundColor: '#f8f9fa', border: '1px solid #ddd', cursor: 'pointer'}}
+                    disabled={telegramLoading}
+                  >
+                    Use a different number
+                  </button>
+                </form>
+              )}
+              {telegramError && (
+                <div style={{ color: '#e74c3c', fontSize: '0.9em', marginTop: '10px' }}>
+                  {telegramError}
                 </div>
               )}
             </section>
