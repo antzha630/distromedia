@@ -1,10 +1,8 @@
 export default async function handler(req, res) {
   const { code, state, error } = req.query;
 
-  // Determine the base URL for redirects
-  const baseUrl = process.env.VERCEL_URL 
-    ? `https://${process.env.VERCEL_URL}` 
-    : `${req.headers['x-forwarded-proto'] || 'http'}://${req.headers.host}`;
+  // The redirect URI must EXACTLY match the one registered in the LinkedIn Developer Console.
+  const redirectUri = 'https://distromedia.vercel.app/api/linkedin/callback';
 
   // Check for OAuth errors
   if (error) {
@@ -33,7 +31,7 @@ export default async function handler(req, res) {
       body: new URLSearchParams({
         grant_type: 'authorization_code',
         code,
-        redirect_uri: `${baseUrl}/api/linkedin/callback`,
+        redirect_uri: redirectUri,
         client_id: process.env.LINKEDIN_CLIENT_ID,
         client_secret: process.env.LINKEDIN_CLIENT_SECRET,
       }),
@@ -44,7 +42,7 @@ export default async function handler(req, res) {
     if (!tokenData.access_token) {
       console.error('Token exchange failed:', tokenData);
       console.error('Response status:', tokenResponse.status);
-      console.error('Redirect URI used:', `${baseUrl}/api/linkedin/callback`);
+      console.error('Redirect URI used:', redirectUri);
       console.error('Client ID present:', !!process.env.LINKEDIN_CLIENT_ID);
       console.error('Client Secret present:', !!process.env.LINKEDIN_CLIENT_SECRET);
       return res.redirect(`/?error=${encodeURIComponent('Failed to get access token')}`);
