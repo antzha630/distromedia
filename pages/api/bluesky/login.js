@@ -32,6 +32,23 @@ export default async function handler(req, res) {
     });
   }
 
+  // After successful login, fetch the user's profile to get their avatar
+  let avatarUrl = '';
+  try {
+    const profileResponse = await fetch(`https://bsky.social/xrpc/app.bsky.actor.getProfile?actor=${data.did}`, {
+      headers: {
+        'Authorization': `Bearer ${data.accessJwt}`,
+      },
+    });
+    if (profileResponse.ok) {
+      const profileData = await profileResponse.json();
+      avatarUrl = profileData.avatar || '';
+    }
+  } catch(e) {
+    // This is not critical, so we can ignore failures and continue without the avatar
+    console.error("Could not fetch bluesky profile avatar:", e);
+  }
+
   return res.status(200).json({
     success: true,
     session: {
@@ -40,6 +57,6 @@ export default async function handler(req, res) {
       handle: data.handle,
       did: data.did,
     },
-    avatarUrl: data.avatarUrl || null,
+    avatarUrl: avatarUrl,
   });
 }
