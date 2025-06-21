@@ -36,12 +36,13 @@ function checkSignature(data) {
 }
 
 export default async function handler(req, res) {
-  console.log('Received callback request:', {
-    method: req.method,
-    query: req.query,
-    headers: req.headers,
-    url: req.url
-  });
+  console.log('=== TELEGRAM CALLBACK RECEIVED ===');
+  console.log('Method:', req.method);
+  console.log('URL:', req.url);
+  console.log('Headers:', JSON.stringify(req.headers, null, 2));
+  console.log('Query params:', JSON.stringify(req.query, null, 2));
+  console.log('Body:', JSON.stringify(req.body, null, 2));
+  console.log('================================');
 
   // Handle webhook updates (POST requests)
   if (req.method === 'POST') {
@@ -61,19 +62,23 @@ export default async function handler(req, res) {
   if (req.method === 'GET') {
     try {
       const data = req.query;
+      console.log('Processing GET request with data:', data);
       
       // Check if we have the required data
       if (!data.id || !data.first_name || !data.hash) {
         console.error('Missing required data:', { 
           hasId: !!data.id, 
           hasFirstName: !!data.first_name, 
-          hasHash: !!data.hash 
+          hasHash: !!data.hash,
+          receivedKeys: Object.keys(data)
         });
         return res.status(400).json({ 
           error: 'Missing required authentication data',
           received: Object.keys(data)
         });
       }
+      
+      console.log('All required data present, checking signature...');
       
       // Verify the authentication data
       if (!checkSignature(data)) {
@@ -83,6 +88,8 @@ export default async function handler(req, res) {
           details: 'Signature verification failed'
         });
       }
+
+      console.log('Signature verified successfully');
 
       // Check if the auth_date is not too old (within last hour)
       const authDate = parseInt(data.auth_date);
@@ -127,5 +134,6 @@ export default async function handler(req, res) {
   }
 
   // Reject other methods
+  console.log('Method not allowed:', req.method);
   return res.status(405).json({ error: 'Method not allowed' });
 } 
