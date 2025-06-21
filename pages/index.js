@@ -59,7 +59,8 @@ function NewHomePage() {
       const script = document.createElement('script');
       script.src = 'https://telegram.org/js/telegram-widget.js?22';
       script.async = true;
-      script.setAttribute('data-telegram-login', 'distromedia_bot');
+      // Using the new test bot to isolate the issue
+      script.setAttribute('data-telegram-login', 'distroappv2_bot'); // This must match the username of your NEW bot
       script.setAttribute('data-size', 'large');
       script.setAttribute('data-radius', '8');
       script.setAttribute('data-userpic', 'true');
@@ -71,7 +72,7 @@ function NewHomePage() {
       script.setAttribute('data-redirect-url', redirectUrl);
       
       // Debug logging
-      addDebugLog(`Bot name: distromedia_bot`, 'info');
+      addDebugLog(`Bot name: ${script.getAttribute('data-telegram-login')}`, 'info');
       addDebugLog(`Current origin: ${currentOrigin}`, 'info');
       addDebugLog(`Redirect URL: ${redirectUrl}`, 'info');
       addDebugLog(`Script src: ${script.src}`, 'info');
