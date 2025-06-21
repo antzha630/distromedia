@@ -308,7 +308,7 @@ function SchedulerPage() {
         </a>
       </div>
 
-      {(!blueskySession || !linkedinSession) && (
+      {(!blueskySession || !linkedinSession || !telegramSession) && (
         <section className="card">
           {!blueskySession && (
             <p>To post to BlueSky, please <a href="/">log in</a> on the homepage.</p>
@@ -316,12 +316,9 @@ function SchedulerPage() {
           {!linkedinSession && (
             <p>To post to LinkedIn, please <a href="/">log in</a> on the homepage.</p>
           )}
-        </section>
-      )}
-
-      {!telegramSession && (
-        <section className="card" style={{ marginTop: '20px' }}>
+          {!telegramSession && (
             <p>To post to Telegram, please <a href="/">log in</a> on the homepage.</p>
+          )}
         </section>
       )}
     </main>

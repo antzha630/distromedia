@@ -242,6 +242,7 @@ function PostPage() {
             >
               {blueskyUserHandle.startsWith('@') ? blueskyUserHandle : `@${blueskyUserHandle}`}
             </a> on BlueSky
+            <br />
           </>
         )}
         {telegramSession && (
