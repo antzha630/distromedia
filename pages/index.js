@@ -106,16 +106,31 @@ function NewHomePage() {
     setTelegramError('');
     addDebugLog('Sending verification code to server...');
 
+    const requestBody = { 
+      phone: telegramPhone.trim(),
+      code: telegramCode.trim(),
+      phoneCodeHash: telegramPhoneCodeHash,
+      sessionString: telegramSessionString,
+    };
+
+    addDebugLog(`Request Body: ${JSON.stringify(requestBody, null, 2)}`, 'debug');
+
+    // Check for missing data before sending
+    for (const key in requestBody) {
+      if (!requestBody[key]) {
+        const errorMsg = `CRITICAL: '${key}' is missing before sending the request.`;
+        addDebugLog(errorMsg, 'error');
+        setTelegramError('A critical error occurred. Please try the login process again.');
+        setTelegramLoading(false);
+        return;
+      }
+    }
+
     try {
       const res = await fetch('/api/telegram/verify-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          phone: telegramPhone.trim(),
-          code: telegramCode.trim(),
-          phoneCodeHash: telegramPhoneCodeHash,
-          sessionString: telegramSessionString,
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       const data = await res.json();
