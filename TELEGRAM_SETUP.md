@@ -1,99 +1,62 @@
-# Telegram Bot Setup Guide
+# Telegram Setup Guide (Core API Method)
 
-## Quick Setup
+This guide explains how to set up the new, more reliable Telegram login system that uses the Telegram Core API. This method bypasses the buggy Login Widget.
 
-1. **Create a Telegram Bot**
-   - Open Telegram and search for `@BotFather`
-   - Send `/newbot`
-   - Follow the instructions to create your bot
-   - Save the bot token (looks like: `123456789:ABCdefGHIjklMNOpqrsTUVwxyz`)
+## Setup Overview
+You will need to get three credentials:
+1.  **API ID:** Your personal developer ID.
+2.  **API Hash:** Your personal developer secret hash.
+3.  **Bot Token:** The token for your bot (e.g., `distroappv2_bot`) which will be used for posting content later.
 
-2. **Configure Environment Variables**
-   - In your Vercel dashboard, go to your project settings
-   - Navigate to Environment Variables
-   - Add `TELEGRAM_BOT_TOKEN` with your bot token
-   - Redeploy your application
+## Step 1: Get Your Telegram API Credentials
 
-3. **Set Bot Domain (IMPORTANT)**
-   - In Telegram, message `@BotFather` again
-   - Send `/setdomain`
-   - Select your bot (distromedia_bot)
-   - Set the domain to your Vercel URL (e.g., `your-app.vercel.app`)
-   - Make sure to use the exact domain without `https://` or trailing slashes
+1.  Go to the official Telegram applications page: **[my.telegram.org](https://my.telegram.org)**
+2.  Log in with the phone number you use for Telegram.
+3.  Click on **"API development tools"**.
+4.  You will see an "App configuration" form. You only need to fill out two fields:
+    *   **App title:** `DistroMedia App` (or any name you like)
+    *   **Short name:** `distromedia` (or any short name)
+5.  Click **"Create application"**.
+6.  You will now see your credentials. **Copy the `api_id` and `api_hash`**. Keep this page open.
 
-4. **Verify Bot Configuration**
-   - Deploy your app to Vercel
-   - Visit your app and check if the Telegram widget appears
-   - If it doesn't appear, use the "Reload Widget" button
+## Step 2: Get Your Bot Token
 
-## How It Works
+1.  In your Telegram app, message `@BotFather`.
+2.  Send `/mybots` and select your bot (e.g., `distroappv2_bot`).
+3.  Click **"API Token"** and copy the token.
 
-The Telegram Login Widget works by:
-1. User clicks the "Login with Telegram" button
-2. Telegram opens a popup for authentication
-3. User authorizes the bot
-4. Telegram sends user data back to your app
-5. User is redirected to the scheduler
+## Step 3: Configure Environment Variables in Vercel
+
+1.  Go to your project's settings in the Vercel dashboard.
+2.  Navigate to **"Environment Variables"**.
+3.  Add the following three variables:
+    *   `TELEGRAM_API_ID`: The `api_id` you copied from my.telegram.org.
+    *   `TELEGRAM_API_HASH`: The `api_hash` you copied from my.telegram.org.
+    *   `TELEGRAM_BOT_TOKEN`: The bot token you copied from BotFather.
+4.  Save the variables.
+
+## Step 4: Redeploy Your Application
+
+1.  In Vercel, go to the **"Deployments"** tab.
+2.  Find the latest deployment at the top of the list.
+3.  Click the `...` menu on the right and select **"Redeploy"**.
+4.  Wait for the new deployment to finish.
+
+## How the New Login Works
+
+1.  Your application now shows a field to enter a phone number.
+2.  When you enter your number, your server uses your `API_ID` and `API_HASH` to ask Telegram to send a 5-digit code directly to your Telegram app.
+3.  You enter that code into the app.
+4.  Your server verifies the code, logs you in, and creates a secure session.
+
+This method is much more stable and is not affected by the Login Widget bugs.
 
 ## Troubleshooting
 
-### Widget Doesn't Appear
-- **Check domain configuration**: Make sure you set the domain correctly in BotFather
-- **Verify bot token**: Ensure `TELEGRAM_BOT_TOKEN` is set in Vercel environment variables
-- **Check browser console**: Look for any JavaScript errors
-- **Try reloading**: Use the "Reload Widget" button if available
-- **Clear browser cache**: Sometimes cached scripts can cause issues
+*   **"Telegram API credentials are not configured..."**: Make sure you have correctly set `TELEGRAM_API_ID` and `TELEGRAM_API_HASH` in Vercel and redeployed.
+*   **"The phone number is invalid..."**: You must enter your full phone number in international format, including the `+` and your country code (e.g., `+15551234567`).
+*   **"You are trying too often..."**: Telegram has rate limits. Please wait a few minutes before requesting another code.
+*   **"Two-Step Verification enabled..."**: For this login method to work, you must temporarily disable Two-Step Verification (also known as a cloud password) on your Telegram account. You can do this in `Telegram Settings > Privacy and Security > Two-Step Verification`. You can re-enable it after logging in.
+*   **Code not received**: Ensure you are checking the Telegram app on your phone or desktop, not your SMS messages. Check the "Telegram" service notifications chat.
 
-### "Invalid Authentication Data"
-- **Domain mismatch**: The domain in BotFather must exactly match your Vercel URL
-- **Bot token incorrect**: Double-check the token from BotFather
-- **HTTPS required**: Make sure you're using HTTPS (Vercel provides this automatically)
-
-### "Authentication Data Too Old"
-- **Try again**: This usually resolves itself on retry
-- **Check system clock**: Ensure your device clock is accurate
-- **Clear browser data**: Clear cookies and cache
-
-### Widget Loads But Login Fails
-- **Check bot permissions**: Make sure your bot is active and not blocked
-- **Verify callback URL**: The widget should redirect back to your app
-- **Check server logs**: Look at Vercel function logs for any errors
-
-## Common Issues with Vercel
-
-1. **Domain Configuration**: 
-   - Use your exact Vercel domain (e.g., `myapp.vercel.app`)
-   - Don't include `https://` or `www.`
-   - Don't include trailing slashes
-
-2. **Environment Variables**:
-   - Make sure to redeploy after adding environment variables
-   - Check that the variable name is exactly `TELEGRAM_BOT_TOKEN`
-
-3. **Widget Loading**:
-   - The widget script loads from Telegram's CDN
-   - Sometimes it can be slow or fail to load
-   - The "Reload Widget" button helps with this
-
-## Testing
-
-1. **Deploy to Vercel**: Make sure your app is deployed
-2. **Set domain in BotFather**: Use your Vercel domain
-3. **Visit your app**: Check if the widget appears
-4. **Test login**: Try logging in with a Telegram account
-5. **Check redirect**: Verify you're redirected to the scheduler
-
-## Bot Token Security
-
-- **Keep it secret**: Never commit your bot token to Git
-- **Use environment variables**: Always use Vercel's environment variables
-- **Rotate if needed**: You can regenerate your bot token in BotFather if compromised
-
-## Support
-
-If you're still having issues:
-1. Check the browser console for errors
-2. Verify your domain is set correctly in BotFather
-3. Ensure all environment variables are set in Vercel
-4. Try creating a new bot if the current one has issues
-5. Check Vercel function logs for server-side errors 
+That's it! Your login system should now be working perfectly. 
