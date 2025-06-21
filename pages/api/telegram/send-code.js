@@ -36,11 +36,15 @@ export default async function handler(req, res) {
       phone
     );
 
+    // The session string contains the state needed for the next step.
+    const sessionString = client.session.save();
+
     await client.disconnect();
 
     return res.status(200).json({
       success: true,
       phoneCodeHash: result.phoneCodeHash,
+      sessionString: sessionString, // Pass the session state to the client
     });
 
   } catch (error) {

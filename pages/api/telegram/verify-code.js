@@ -18,14 +18,14 @@ export default async function handler(req, res) {
     return res.status(500).json({ success: false, error: 'Telegram API credentials are not configured on the server.' });
   }
 
-  const { phone, code, phoneCodeHash } = req.body;
+  const { phone, code, phoneCodeHash, sessionString } = req.body;
 
-  if (!phone || !code || !phoneCodeHash) {
-    return res.status(400).json({ success: false, error: 'Phone, code, and hash are required.' });
+  if (!phone || !code || !phoneCodeHash || !sessionString) {
+    return res.status(400).json({ success: false, error: 'Phone, code, hash, and sessionString are required.' });
   }
 
-  const stringSession = new StringSession(''); // We don't need to save the session here either
-  const client = new TelegramClient(stringSession, apiId, apiHash, {
+  // Restore the session from the string provided by the client
+  const client = new TelegramClient(new StringSession(sessionString), apiId, apiHash, {
     connectionRetries: 3,
   });
 
