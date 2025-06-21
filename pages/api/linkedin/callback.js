@@ -19,9 +19,6 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Get the same redirect URI as used in auth
-    const redirectUri = `${req.headers['x-forwarded-proto'] || 'http'}://${req.headers.host}/api/linkedin/callback`;
-
     // Exchange code for access token
     const tokenResponse = await fetch('https://www.linkedin.com/oauth/v2/accessToken', {
       method: 'POST',
@@ -31,74 +28,69 @@ export default async function handler(req, res) {
       body: new URLSearchParams({
         grant_type: 'authorization_code',
         code,
+        redirect_uri: `${baseUrl}/api/linkedin/callback`,
         client_id: process.env.LINKEDIN_CLIENT_ID,
         client_secret: process.env.LINKEDIN_CLIENT_SECRET,
-        redirect_uri: redirectUri,
       }),
     });
 
     const tokenData = await tokenResponse.json();
 
-    if (!tokenResponse.ok) {
+    if (!tokenData.access_token) {
       console.error('Token exchange failed:', tokenData);
-      throw new Error(tokenData.error_description || 'Failed to get access token');
+      return res.status(400).json({ error: 'Failed to get access token' });
     }
 
-    // Get user profile using OpenID Connect userinfo endpoint
-    const profileResponse = await fetch('https://api.linkedin.com/v2/userinfo', {
+    // Get user profile
+    const profileResponse = await fetch('https://api.linkedin.com/v2/me', {
       headers: {
         'Authorization': `Bearer ${tokenData.access_token}`,
+        'X-Restli-Protocol-Version': '2.0.0',
       },
     });
 
     const profileData = await profileResponse.json();
 
-    if (!profileResponse.ok) {
+    if (!profileData.id) {
       console.error('Profile fetch failed:', profileData);
-      throw new Error('Failed to get user profile');
+      return res.status(400).json({ error: 'Failed to get user profile' });
     }
 
-    // Fetch profile image from LinkedIn v2/me endpoint
+    // Get profile picture
     let profileImageUrl = '';
     try {
-      const meResponse = await fetch('https://api.linkedin.com/v2/me?projection=(profilePicture(displayImage~:playableStreams))', {
+      const pictureResponse = await fetch('https://api.linkedin.com/v2/me?projection=(profilePicture(displayImage~:playableStreams))', {
         headers: {
           'Authorization': `Bearer ${tokenData.access_token}`,
+          'X-Restli-Protocol-Version': '2.0.0',
         },
       });
-      const meData = await meResponse.json();
-      const elements = meData.profilePicture && meData.profilePicture['displayImage~'] && meData.profilePicture['displayImage~'].elements;
-      if (elements && elements.length > 0) {
-        // Get the largest available image
-        const largest = elements[elements.length - 1];
-        profileImageUrl = largest.identifiers[0].identifier;
+      const pictureData = await pictureResponse.json();
+      if (pictureData.profilePicture && pictureData.profilePicture['displayImage~'] && pictureData.profilePicture['displayImage~'].elements) {
+        const elements = pictureData.profilePicture['displayImage~'].elements;
+        const largestImage = elements.reduce((largest, current) => {
+          return (current.data['com.linkedin.digitalmedia.mediaartifact.StillImage'].storageSize.width > largest.data['com.linkedin.digitalmedia.mediaartifact.StillImage'].storageSize.width) ? current : largest;
+        });
+        profileImageUrl = largestImage.identifiers[0].identifier;
       }
-      console.log('LinkedIn /me response:', JSON.stringify(meData, null, 2));
-    } catch (e) {
-      profileImageUrl = '';
+    } catch (error) {
+      // Profile picture is optional, continue without it
     }
 
-    // Store the session data
+    // Create session object
     const session = {
       accessToken: tokenData.access_token,
-      expiresIn: tokenData.expires_in,
-      userId: profileData.sub,
-      name: profileData.name || `${profileData.given_name} ${profileData.family_name}`,
-      email: profileData.email,
-      profileImageUrl
+      userId: profileData.id,
+      name: `${profileData.localizedFirstName} ${profileData.localizedLastName}`,
+      profileImageUrl,
+      expiresAt: Date.now() + (tokenData.expires_in * 1000),
     };
 
-    console.log('Session being sent to frontend:', session);
-
-    // Clear the state cookie
-    res.setHeader('Set-Cookie', 'linkedin_oauth_state=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT');
-
-    // Redirect back to the app with the session data
-    res.redirect(`/?linkedin=${encodeURIComponent(JSON.stringify(session))}`);
-
-    console.log('LinkedIn session:', session);
+    // Redirect to frontend with session data
+    const redirectUrl = `/?linkedin=${encodeURIComponent(JSON.stringify(session))}`;
+    res.redirect(redirectUrl);
   } catch (error) {
     console.error('LinkedIn callback error:', error);
-    res.redirect(`/?error=${encodeURIComponent(error.message || 'Authentication failed')}`);
+    res.status(500).json({ error: 'Internal server error' });
   }
 } 

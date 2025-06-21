@@ -11,59 +11,32 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Missing credentials' });
   }
 
-  // Log the identifier format for debugging (without the password)
-  console.log('Login attempt with identifier:', identifier);
-  console.log('App password length:', appPassword.length);
-  console.log('App password format check:', appPassword.includes('-'));
+  // Sanitize the identifier
+  let cleanIdentifier = identifier.trim().replace(/[\u200B-\u200D\uFEFF]/g, '').replace(/^@/, '').replace(/[.\s]+$/, '');
 
-  const agent = new BskyAgent({ service: 'https://bsky.social' });
-
-  try {
-    const result = await agent.login({
-      identifier,
+  const res = await fetch('https://bsky.social/xrpc/com.atproto.server.createSession', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      identifier: cleanIdentifier,
       password: appPassword,
-    });
+    }),
+  });
 
-    // Fetch the user's profile to get the avatar URL
-    let avatarUrl = '';
-    try {
-      const profile = await agent.api.app.bsky.actor.getProfile({ actor: identifier });
-      avatarUrl = profile.data.avatar || '';
-    } catch (e) {
-      avatarUrl = '';
-    }
-
-    res.status(200).json({
-      success: true,
-      session: result.data,
-      avatarUrl,
-    });
-  } catch (err) {
-    console.error('Login failed:', err);
-    console.error('Error details:', {
-      message: err.message,
-      error: err.error,
-      status: err.status,
-      headers: err.headers
-    });
-    
-    // Provide more specific error messages
-    let errorMessage = 'Login failed';
-    if (err.error === 'AuthenticationRequired') {
-      errorMessage = 'Invalid identifier or app password. Please check your credentials.';
-    } else if (err.status === 401) {
-      errorMessage = 'Authentication failed. Please verify your username and app password.';
-    } else if (err.message) {
-      errorMessage = err.message;
-    }
-    
-    res.status(500).json({
-      success: false,
-      error: errorMessage,
-      details: {
-        error: err.error,
-        status: err.status
-      }
-    });
+  const data = await res.json();
+  
+  if (data.error) {
+    throw new Error(data.message || data.error);
   }
+
+  return {
+    success: true,
+    session: {
+      accessJwt: data.accessJwt,
+      refreshJwt: data.refreshJwt,
+      handle: data.handle,
+      did: data.did,
+    },
+    avatarUrl: data.avatarUrl || null,
+  };
 }

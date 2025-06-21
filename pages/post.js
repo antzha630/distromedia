@@ -244,6 +244,19 @@ function PostPage() {
             </a> on BlueSky
           </>
         )}
+        {telegramSession && (
+          <>
+            <a
+              href={`https://t.me/${telegramSession.username}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: '#229ED9' }}
+            >
+              {telegramSession.firstName || telegramSession.first_name}{telegramSession.lastName ? ' ' + (telegramSession.lastName || telegramSession.last_name) : telegramSession.last_name ? ' ' + telegramSession.last_name : ''}
+            </a> on Telegram
+            <br />
+          </>
+        )}
       </p>
 
       {/* Only show the output box for platforms the user is logged into */}
@@ -362,7 +375,7 @@ function PostPage() {
           <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-start', marginTop: 10 }}>
             {blueskySummary && (
               <button onClick={() => handleSendClick('bluesky')} style={{ background: '#3f51b5', color: '#fff' }}>
-                Send to Bluesky {articleMetadata ? 'with Preview' : ''}
+                Post to Bluesky
               </button>
             )}
           </div>
@@ -374,7 +387,7 @@ function PostPage() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 8 }}>
             <img src={telegramSession.photo_url || '/images/telegram-profile.png'} alt="Telegram Profile" style={{ width: 48, height: 48, borderRadius: '50%', background: '#229ED9', objectFit: 'cover' }} />
             <div>
-              <div style={{ fontWeight: 700, fontSize: '1.1em', color: '#229ED9' }}>{telegramSession.first_name || 'Telegram User'}{telegramSession.last_name ? ' ' + telegramSession.last_name : ''}</div>
+              <div style={{ fontWeight: 700, fontSize: '1.1em', color: '#229ED9' }}>{(telegramSession.firstName || telegramSession.first_name) || 'Telegram User'}{telegramSession.lastName ? ' ' + (telegramSession.lastName || telegramSession.last_name) : telegramSession.last_name ? ' ' + telegramSession.last_name : ''}</div>
               <div style={{ color: '#aaa', fontSize: '0.95em' }}>@{telegramSession.username || 'username'}</div>
             </div>
           </div>
