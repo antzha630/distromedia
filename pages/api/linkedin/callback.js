@@ -48,48 +48,26 @@ export default async function handler(req, res) {
       return res.redirect(`/?error=${encodeURIComponent('Failed to get access token')}`);
     }
 
-    // Get user profile
-    const profileResponse = await fetch('https://api.linkedin.com/v2/me', {
+    // Get user profile using OpenID Connect userinfo endpoint
+    const profileResponse = await fetch('https://api.linkedin.com/v2/userinfo', {
       headers: {
         'Authorization': `Bearer ${tokenData.access_token}`,
-        'X-Restli-Protocol-Version': '2.0.0',
       },
     });
 
     const profileData = await profileResponse.json();
 
-    if (!profileData.id) {
-      console.error('Profile fetch failed:', profileData);
+    if (!profileData.sub) {
+      console.error('Profile fetch failed (userinfo):', profileData);
       return res.redirect(`/?error=${encodeURIComponent('Failed to get user profile')}`);
     }
 
-    // Get profile picture
-    let profileImageUrl = '';
-    try {
-      const pictureResponse = await fetch('https://api.linkedin.com/v2/me?projection=(profilePicture(displayImage~:playableStreams))', {
-        headers: {
-          'Authorization': `Bearer ${tokenData.access_token}`,
-          'X-Restli-Protocol-Version': '2.0.0',
-        },
-      });
-      const pictureData = await pictureResponse.json();
-      if (pictureData.profilePicture && pictureData.profilePicture['displayImage~'] && pictureData.profilePicture['displayImage~'].elements) {
-        const elements = pictureData.profilePicture['displayImage~'].elements;
-        const largestImage = elements.reduce((largest, current) => {
-          return (current.data['com.linkedin.digitalmedia.mediaartifact.StillImage'].storageSize.width > largest.data['com.linkedin.digitalmedia.mediaartifact.StillImage'].storageSize.width) ? current : largest;
-        });
-        profileImageUrl = largestImage.identifiers[0].identifier;
-      }
-    } catch (error) {
-      // Profile picture is optional, continue without it
-    }
-
-    // Create session object
+    // Create session object from OpenID Connect data
     const session = {
       accessToken: tokenData.access_token,
-      userId: profileData.id,
-      name: `${profileData.localizedFirstName} ${profileData.localizedLastName}`,
-      profileImageUrl,
+      userId: profileData.sub,
+      name: profileData.name,
+      profileImageUrl: profileData.picture || '',
       expiresAt: Date.now() + (tokenData.expires_in * 1000),
     };
 
