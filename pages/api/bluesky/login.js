@@ -14,7 +14,7 @@ export default async function handler(req, res) {
   // Sanitize the identifier
   let cleanIdentifier = identifier.trim().replace(/[\u200B-\u200D\uFEFF]/g, '').replace(/^@/, '').replace(/[.\s]+$/, '');
 
-  const res = await fetch('https://bsky.social/xrpc/com.atproto.server.createSession', {
+  const response = await fetch('https://bsky.social/xrpc/com.atproto.server.createSession', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -23,13 +23,16 @@ export default async function handler(req, res) {
     }),
   });
 
-  const data = await res.json();
+  const data = await response.json();
   
   if (data.error) {
-    throw new Error(data.message || data.error);
+    return res.status(500).json({ 
+      success: false, 
+      error: data.message || data.error 
+    });
   }
 
-  return {
+  return res.status(200).json({
     success: true,
     session: {
       accessJwt: data.accessJwt,
@@ -38,5 +41,5 @@ export default async function handler(req, res) {
       did: data.did,
     },
     avatarUrl: data.avatarUrl || null,
-  };
+  });
 }
