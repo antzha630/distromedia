@@ -25,7 +25,7 @@ export default async function handler(req, res) {
       messages: [
         {
           role: "system",
-          content: "You are a helpful assistant that creates engaging social media posts. Create a concise, engaging summary that would work well on social media platforms. Keep it under 280 characters for Twitter/Bluesky compatibility. Make it informative but also engaging and shareable."
+          content: "You are a professional content creator that writes clean, engaging social media posts. Create concise summaries that work well across all social media platforms. Keep posts under 280 characters for Twitter/Bluesky compatibility. Write in a professional tone without emojis, hashtags, or trendy language. Focus on clear, informative content that provides value to readers."
         },
         {
           role: "user",
@@ -42,6 +42,11 @@ export default async function handler(req, res) {
     }
 
     let summary = completion.choices[0].message.content.trim();
+    
+    // Remove any remaining emojis or hashtags that might have been generated
+    summary = summary.replace(/[#️⃣🔍📰💡🚀🔥✨💯🎯📈📊]/g, '');
+    summary = summary.replace(/#\w+/g, '');
+    summary = summary.replace(/[^\w\s.,!?-]/g, '');
     
     // Ensure the summary is under 280 characters
     if (summary.length > 280) {
