@@ -15,6 +15,7 @@ function NewHomePage() {
   const [telegramPhone, setTelegramPhone] = useState('');
   const [telegramCode, setTelegramCode] = useState('');
   const [telegramPhoneCodeHash, setTelegramPhoneCodeHash] = useState('');
+  const [telegramSessionString, setTelegramSessionString] = useState('');
   const [telegramStep, setTelegramStep] = useState('phone'); // 'phone' or 'code'
   const [telegramLoading, setTelegramLoading] = useState(false);
   const [telegramError, setTelegramError] = useState('');
@@ -79,6 +80,7 @@ function NewHomePage() {
       if (res.ok && data.success) {
         addDebugLog('Successfully received phoneCodeHash from server.');
         setTelegramPhoneCodeHash(data.phoneCodeHash);
+        setTelegramSessionString(data.sessionString);
         setTelegramStep('code');
         setTelegramError('');
       } else {
@@ -112,6 +114,7 @@ function NewHomePage() {
           phone: telegramPhone.trim(),
           code: telegramCode.trim(),
           phoneCodeHash: telegramPhoneCodeHash,
+          sessionString: telegramSessionString,
         }),
       });
 
@@ -140,6 +143,7 @@ function NewHomePage() {
     setTelegramError('');
     setTelegramLoading(false);
     setTelegramPhoneCodeHash('');
+    setTelegramSessionString('');
     addDebugLog('Telegram login reset.');
   };
 
