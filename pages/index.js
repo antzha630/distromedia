@@ -56,7 +56,15 @@ function NewHomePage() {
       
       // Use direct redirect instead of callback
       const currentOrigin = window.location.origin;
-      script.setAttribute('data-redirect-url', `${currentOrigin}/api/telegram/callback`);
+      const redirectUrl = `${currentOrigin}/api/telegram/callback`;
+      script.setAttribute('data-redirect-url', redirectUrl);
+      
+      // Debug logging
+      console.log('Telegram widget configuration:');
+      console.log('- Bot name: distromedia_bot');
+      console.log('- Current origin:', currentOrigin);
+      console.log('- Redirect URL:', redirectUrl);
+      console.log('- Full widget URL:', `${currentOrigin}/api/telegram/callback`);
       
       // Add error handling
       script.onerror = () => {
