@@ -18,6 +18,10 @@ const platformPrompts = {
   telegram: {
     role: "You are a Telegram content creator. Write concise, direct posts that get straight to the point. Telegram users prefer clear, actionable information. Use a straightforward, informative tone that works well for quick reading. Keep posts under 280 characters. No emojis or hashtags.",
     maxLength: 280
+  },
+  twitter: {
+    role: "You are a Twitter (X) content creator. Write concise, engaging tweets that spark conversation. Use a friendly, approachable tone. Keep tweets under 280 characters. No emojis or hashtags.",
+    maxLength: 280
   }
 };
 
@@ -27,7 +31,7 @@ export default async function handler(req, res) {
     return res.status(405).end(`Method ${req.method} Not Allowed`);
   }
 
-  const { text, platform = 'linkedin' } = req.body;
+  const { text, platform = 'linkedin', url } = req.body;
 
   if (!text) {
     return res.status(400).json({ error: 'Text is required in the request body' });
@@ -67,6 +71,10 @@ export default async function handler(req, res) {
     summary = summary.replace(/#\w+/g, '');
     summary = summary.replace(/[^\w\s.,!?-]/g, '');
     
+    // For Twitter/X, ensure the summary is <= 280 characters (leave space for URL on frontend)
+    if (platform === 'twitter' && summary.length > platformConfig.maxLength) {
+      summary = summary.substring(0, platformConfig.maxLength - 3) + '...';
+    }
     // Ensure the summary is under the platform's character limit
     if (summary.length > platformConfig.maxLength) {
       summary = summary.substring(0, platformConfig.maxLength - 3) + '...';
