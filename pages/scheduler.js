@@ -295,10 +295,14 @@ function SchedulerPage() {
         )}
         {twitterSession && (
           <>
-            <span style={{ color: '#1DA1F2', fontWeight: 600 }}>
-              {twitterSession.firstName || twitterSession.first_name || ''} {twitterSession.lastName || twitterSession.last_name || ''}
-              {twitterSession.username ? ` (@${twitterSession.username})` : ''}
-            </span> on X (Twitter)
+            <a
+              href={`https://twitter.com/${twitterSession.screenName}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: '#1DA1F2', fontWeight: 600 }}
+            >
+              Signed in as {twitterSession.screenName}
+            </a> on X.
             <br />
           </>
         )}
@@ -358,11 +362,6 @@ function SchedulerPage() {
           onChange={(e) => setInputText(e.target.value)}
         />
         <button onClick={summarize} disabled={summarizing}>{summarizing ? 'Summarizing...' : 'Summarize'}</button>
-        {twitterSession && (
-          <button onClick={postToTwitter} style={{ background: '#1DA1F2', color: '#fff', fontWeight: 700, fontSize: '1.1em', padding: '0.9em 2.2em', borderRadius: 999, boxShadow: '0 2px 8px #0002', marginTop: 12 }}>
-            Post to X (Twitter)
-          </button>
-        )}
       </section>
 
       <div style={{ textAlign: 'center', marginTop: '30px', marginBottom: '40px' }}>
