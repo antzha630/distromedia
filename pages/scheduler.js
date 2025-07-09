@@ -11,6 +11,7 @@ function SchedulerPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [telegramSession, setTelegramSession] = useState(null);
   const [summarizing, setSummarizing] = useState(false);
+  const [twitterSession, setTwitterSession] = useState(null);
 
   // Load sessions from sessionStorage on mount
   useEffect(() => {
@@ -18,6 +19,7 @@ function SchedulerPage() {
     const storedBlueskyHandle = sessionStorage.getItem('blueskyHandle');
     const storedLinkedinSession = sessionStorage.getItem('linkedinSession');
     const storedTelegramSession = sessionStorage.getItem('telegramSession');
+    const storedTwitterSession = sessionStorage.getItem('twitterSession');
 
     if (storedBlueskySession) {
       setBlueskySession(JSON.parse(storedBlueskySession));
@@ -29,6 +31,7 @@ function SchedulerPage() {
       setLinkedinSession(JSON.parse(storedLinkedinSession));
     }
     if (storedTelegramSession) setTelegramSession(JSON.parse(storedTelegramSession));
+    if (storedTwitterSession) setTwitterSession(JSON.parse(storedTwitterSession));
   }, []);
 
   const fetchArticleMetadata = async () => {
@@ -200,6 +203,37 @@ function SchedulerPage() {
     }
   };
 
+  const postToTwitter = async () => {
+    if (!twitterSession) {
+      alert('Please log in to X (Twitter) first via the homepage.');
+      return;
+    }
+    if (!tweet) {
+      alert('Please enter a summary to post.');
+      return;
+    }
+    try {
+      const res = await fetch('/api/twitter/post', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: tweet,
+          accessToken: twitterSession.accessToken,
+          accessSecret: twitterSession.accessSecret
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert('✅ Posted to X (Twitter)!');
+      } else {
+        alert('❌ X (Twitter) post failed: ' + (data.error || 'Unknown error'));
+      }
+    } catch (error) {
+      console.error('X (Twitter) post error:', error);
+      alert('❌ Failed to post to X (Twitter)');
+    }
+  };
+
   return (
     <main className="container">
       <h1>🧠 AI Content Generator</h1>
@@ -241,6 +275,15 @@ function SchedulerPage() {
               {telegramSession.firstName || telegramSession.first_name || ''} {telegramSession.lastName || telegramSession.last_name || ''}
               {telegramSession.username ? ` (@${telegramSession.username})` : ''}
             </span> on Telegram
+            <br />
+          </>
+        )}
+        {twitterSession && (
+          <>
+            <span style={{ color: '#1DA1F2', fontWeight: 600 }}>
+              {twitterSession.firstName || twitterSession.first_name || ''} {twitterSession.lastName || twitterSession.last_name || ''}
+              {twitterSession.username ? ` (@${twitterSession.username})` : ''}
+            </span> on X (Twitter)
             <br />
           </>
         )}
@@ -300,6 +343,11 @@ function SchedulerPage() {
           onChange={(e) => setInputText(e.target.value)}
         />
         <button onClick={summarize} disabled={summarizing}>{summarizing ? 'Summarizing...' : 'Summarize'}</button>
+        {twitterSession && (
+          <button onClick={postToTwitter} style={{ background: '#1DA1F2', color: '#fff', fontWeight: 700, fontSize: '1.1em', padding: '0.9em 2.2em', borderRadius: 999, boxShadow: '0 2px 8px #0002', marginTop: 12 }}>
+            Post to X (Twitter)
+          </button>
+        )}
       </section>
 
       <div style={{ textAlign: 'center', marginTop: '30px', marginBottom: '40px' }}>
@@ -308,7 +356,7 @@ function SchedulerPage() {
         </a>
       </div>
 
-      {(!blueskySession || !linkedinSession || !telegramSession) && (
+      {(!blueskySession || !linkedinSession || !telegramSession || !twitterSession) && (
         <section className="card">
           {!blueskySession && (
             <p>To post to BlueSky, please <a href="/">log in</a> on the homepage.</p>
@@ -318,6 +366,9 @@ function SchedulerPage() {
           )}
           {!telegramSession && (
             <p>To post to Telegram, please <a href="/">log in</a> on the homepage.</p>
+          )}
+          {!twitterSession && (
+            <p>To post to X (Twitter), please <a href="/">log in</a> on the homepage.</p>
           )}
         </section>
       )}

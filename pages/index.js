@@ -47,6 +47,18 @@ function NewHomePage() {
         console.error('Failed to parse Telegram session:', error);
       }
     }
+
+    // Handle potential Twitter callback data
+    const twitterData = router.query.twitterSession;
+    if (twitterData) {
+      try {
+        const session = JSON.parse(decodeURIComponent(twitterData));
+        sessionStorage.setItem('twitterSession', JSON.stringify(session));
+        router.push('/scheduler');
+      } catch (error) {
+        console.error('Failed to parse Twitter session:', error);
+      }
+    }
   }, [router]);
 
   const handleTelegramPhoneSubmit = async (e) => {
@@ -338,6 +350,23 @@ function NewHomePage() {
               )}
             </section>
           )}
+
+          {/* X (Twitter) Login */}
+          <section className="card" style={{ padding: '20px', minWidth: 300, textAlign: 'center', boxShadow: '0 4px 24px rgba(0,0,0,0.15)', borderRadius: '16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', margin: '0 auto 20px auto' }}>
+              <svg width="50" height="50" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="60" cy="60" r="60" fill="#1DA1F2"/>
+                <text x="50%" y="50%" textAnchor="middle" dy=".3em" fontSize="48" fill="#fff">X</text>
+              </svg>
+            </div>
+            <h3>Login with X (Twitter)</h3>
+            <button
+              onClick={() => window.location.href = '/api/twitter/auth'}
+              style={{ width: '100%', padding: '10px', background: '#1DA1F2', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 600, fontSize: '1em', marginTop: 8 }}
+            >
+              Log in with X (Twitter)
+            </button>
+          </section>
         </div>
       </div>
     </main>

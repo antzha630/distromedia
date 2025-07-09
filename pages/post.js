@@ -14,6 +14,7 @@ function PostPage() {
   const [telegramSession, setTelegramSession] = useState(null);
   const [telegramMessage, setTelegramMessage] = useState('');
   const [telegramGroupId, setTelegramGroupId] = useState('');
+  const [twitterSession, setTwitterSession] = useState(null);
 
   useEffect(() => {
     const storedLinkedinSummary = sessionStorage.getItem('linkedinSummary');
@@ -26,6 +27,7 @@ function PostPage() {
     const storedBlueskyAvatarUrl = sessionStorage.getItem('blueskyAvatarUrl');
     const storedTelegramSession = sessionStorage.getItem('telegramSession');
     const storedTelegramMessage = sessionStorage.getItem('telegramMessage');
+    const storedTwitterSession = sessionStorage.getItem('twitterSession');
 
     if (storedLinkedinSummary) setLinkedinSummary(storedLinkedinSummary);
     if (storedBlueskySummary) setBlueskySummary(storedBlueskySummary);
@@ -37,6 +39,7 @@ function PostPage() {
     if (storedBlueskyAvatarUrl) setBlueskyAvatarUrl(storedBlueskyAvatarUrl);
     if (storedTelegramSession) setTelegramSession(JSON.parse(storedTelegramSession));
     if (storedTelegramMessage) setTelegramMessage(storedTelegramMessage);
+    if (storedTwitterSession) setTwitterSession(JSON.parse(storedTwitterSession));
   }, []);
 
   useEffect(() => {
@@ -156,6 +159,37 @@ function PostPage() {
     }
   };
 
+  const postToTwitter = async () => {
+    if (!twitterSession) {
+      alert('Please log in to X (Twitter) first via the homepage.');
+      return;
+    }
+    if (!blueskySummary) {
+      alert('Please enter a summary to post.');
+      return;
+    }
+    try {
+      const res = await fetch('/api/twitter/post', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: blueskySummary,
+          accessToken: twitterSession.accessToken,
+          accessSecret: twitterSession.accessSecret
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert('✅ Posted to X (Twitter)!');
+      } else {
+        alert('❌ X (Twitter) post failed: ' + (data.error || 'Unknown error'));
+      }
+    } catch (error) {
+      console.error('X (Twitter) post error:', error);
+      alert('❌ Failed to post to X (Twitter)');
+    }
+  };
+
   // Confirmation modal logic
   const handleSendClick = (platform) => {
     setPendingAction(platform);
@@ -166,6 +200,7 @@ function PostPage() {
     if (pendingAction === 'linkedin') postToLinkedIn();
     if (pendingAction === 'bluesky') postToBluesky();
     if (pendingAction === 'telegram') postToTelegram(telegramSession.id);
+    if (pendingAction === 'twitter') postToTwitter();
     setPendingAction(null);
   };
   const handleModalNo = () => {
@@ -201,6 +236,15 @@ function PostPage() {
         results.push('✅ Sent to Telegram!');
       } catch (e) {
         results.push('❌ Telegram post failed');
+      }
+    }
+    // Twitter (DM only)
+    if (twitterSession && blueskySummary) {
+      try {
+        await postToTwitter();
+        results.push('✅ Sent to X (Twitter)!');
+      } catch (e) {
+        results.push('❌ X (Twitter) post failed');
       }
     }
     if (results.length === 0) {
@@ -255,6 +299,19 @@ function PostPage() {
             >
               {telegramSession.firstName || telegramSession.first_name}{telegramSession.lastName ? ' ' + (telegramSession.lastName || telegramSession.last_name) : telegramSession.last_name ? ' ' + telegramSession.last_name : ''}
             </a> on Telegram
+            <br />
+          </>
+        )}
+        {twitterSession && (
+          <>
+            <a
+              href={`https://twitter.com/${twitterSession.screenName}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: '#1DA1F2' }}
+            >
+              {twitterSession.screenName || 'X (Twitter) User'}
+            </a> on X (Twitter)
             <br />
           </>
         )}
@@ -443,8 +500,46 @@ function PostPage() {
         </section>
       )}
 
+      {twitterSession && (
+        <section className="card" style={{ background: '#181c22', color: '#f0f0f0', maxWidth: 600, margin: '0 auto 32px auto', boxShadow: '0 2px 12px #0002' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 8 }}>
+            <svg width="48" height="48" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="60" cy="60" r="60" fill="#1DA1F2"/>
+              <text x="50%" y="50%" textAnchor="middle" dy=".3em" fontSize="32" fill="#fff">X</text>
+            </svg>
+            <div>
+              <div style={{ fontWeight: 700, fontSize: '1.1em' }}>{twitterSession.screenName || 'X (Twitter) User'}</div>
+              <div style={{ color: '#aaa', fontSize: '0.95em' }}>@{twitterSession.screenName || 'username'}</div>
+            </div>
+          </div>
+          <textarea
+            rows="3"
+            value={blueskySummary}
+            onChange={(e) => setBlueskySummary(e.target.value)}
+            style={{
+              width: '100%',
+              border: 'none',
+              background: 'transparent',
+              fontSize: '1.1em',
+              color: '#f0f0f0',
+              resize: 'vertical',
+              marginBottom: 12,
+              fontFamily: 'inherit',
+              outline: 'none',
+              fontWeight: 400,
+              minHeight: 60,
+              boxSizing: 'border-box',
+              padding: 0
+            }}
+          />
+          <button onClick={postToTwitter} style={{ background: '#1DA1F2', color: '#fff', fontWeight: 700, fontSize: '1.1em', padding: '0.9em 2.2em', borderRadius: 999, boxShadow: '0 2px 8px #0002', marginTop: 12 }}>
+            Post to X (Twitter)
+          </button>
+        </section>
+      )}
+
       {/* Post All Button: show if logged into at least 2 platforms */}
-      {(!!blueskySession + !!linkedinSession + !!telegramSession >= 2) && (
+      {(!!blueskySession + !!linkedinSession + !!telegramSession + !!twitterSession >= 2) && (
         <div style={{ textAlign: 'center', marginBottom: 24 }}>
           <button onClick={postAll} style={{ background: 'linear-gradient(90deg, #3f51b5 0%, #229ED9 100%)', color: '#fff', fontWeight: 700, fontSize: '1.1em', padding: '0.9em 2.2em', borderRadius: 999, boxShadow: '0 2px 8px #0002' }}>
             Post All
