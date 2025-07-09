@@ -547,6 +547,17 @@ function PostPage() {
               padding: 0
             }}
           />
+          {/* Embedded clickable image preview for the article, similar to Bluesky */}
+          {articleMetadata && articleMetadata.image && articleUrl && (
+            <a href={articleUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 16, background: '#222', borderRadius: 8, margin: '12px 0', textDecoration: 'none', color: '#f0f0f0', boxShadow: '0 1px 4px #0002', overflow: 'hidden' }}>
+              <img src={articleMetadata.image} alt={articleMetadata.title} style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 8, flexShrink: 0 }} />
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 600, fontSize: '1.05em', marginBottom: 4 }}>{articleMetadata.title}</div>
+                <div style={{ color: '#aaa', fontSize: '0.97em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{articleMetadata.description}</div>
+                <div style={{ color: '#1DA1F2', fontSize: '0.95em', marginTop: 4 }}>{articleUrl.replace(/^https?:\/\//, '').split('/')[0]}</div>
+              </div>
+            </a>
+          )}
           <button onClick={postToTwitter} style={{ background: '#1DA1F2', color: '#fff', fontWeight: 700, fontSize: '1.1em', padding: '0.9em 2.2em', borderRadius: 999, boxShadow: '0 2px 8px #0002', marginTop: 12 }}>
             Post to X (Twitter)
           </button>
