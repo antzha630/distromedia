@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 
 function SchedulerPage() {
+  const router = useRouter();
   const [inputText, setInputText] = useState('');
   const [tweet, setTweet] = useState('');
   const [blueskySession, setBlueskySession] = useState(null);
@@ -32,7 +34,20 @@ function SchedulerPage() {
     }
     if (storedTelegramSession) setTelegramSession(JSON.parse(storedTelegramSession));
     if (storedTwitterSession) setTwitterSession(JSON.parse(storedTwitterSession));
-  }, []);
+
+    // Handle Twitter session from URL
+    if (router.query.twitterSession) {
+      try {
+        const session = JSON.parse(decodeURIComponent(router.query.twitterSession));
+        sessionStorage.setItem('twitterSession', JSON.stringify(session));
+        setTwitterSession(session);
+        // Remove the query param from the URL after storing
+        router.replace('/scheduler', undefined, { shallow: true });
+      } catch (error) {
+        console.error('Failed to parse Twitter session:', error);
+      }
+    }
+  }, [router]);
 
   const fetchArticleMetadata = async () => {
     if (!articleUrl) return;
