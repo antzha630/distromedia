@@ -301,7 +301,7 @@ function SchedulerPage() {
               rel="noopener noreferrer"
               style={{ color: '#1DA1F2', fontWeight: 600 }}
             >
-              Signed in as {twitterSession.screenName}
+              {twitterSession.screenName}
             </a> on X.
             <br />
           </>

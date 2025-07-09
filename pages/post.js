@@ -518,10 +518,14 @@ function PostPage() {
       {twitterSession && (
         <section className="card" style={{ background: '#181c22', color: '#f0f0f0', maxWidth: 600, margin: '0 auto 32px auto', boxShadow: '0 2px 12px #0002' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 8 }}>
-            <svg width="48" height="48" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="60" cy="60" r="60" fill="#1DA1F2"/>
-              <text x="50%" y="50%" textAnchor="middle" dy=".3em" fontSize="32" fill="#fff">X</text>
-            </svg>
+            {twitterSession.profileImageUrl ? (
+              <img src={twitterSession.profileImageUrl} alt="Twitter Profile" style={{ width: 48, height: 48, borderRadius: '50%', background: '#222', objectFit: 'cover' }} />
+            ) : (
+              <svg width="48" height="48" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="60" cy="60" r="60" fill="#1DA1F2"/>
+                <text x="50%" y="50%" textAnchor="middle" dy=".3em" fontSize="32" fill="#fff">X</text>
+              </svg>
+            )}
             <div>
               <div style={{ fontWeight: 700, fontSize: '1.1em' }}>{twitterSession.screenName || 'X (Twitter) User'}</div>
               <div style={{ color: '#aaa', fontSize: '0.95em' }}>@{twitterSession.screenName || 'username'}</div>
@@ -558,7 +562,44 @@ function PostPage() {
               </div>
             </a>
           )}
-          <button onClick={postToTwitter} style={{ background: '#1DA1F2', color: '#fff', fontWeight: 700, fontSize: '1.1em', padding: '0.9em 2.2em', borderRadius: 999, boxShadow: '0 2px 8px #0002', marginTop: 12 }}>
+          <button onClick={async () => {
+            if (!twitterSession) {
+              alert('Please log in to X (Twitter) first via the homepage.');
+              return;
+            }
+            if (!blueskySummary) {
+              alert('Please enter a summary to post.');
+              return;
+            }
+            // Always append the article URL and ensure total length <= 280
+            let urlToAppend = articleUrl ? ` ${articleUrl}` : '';
+            let maxSummaryLength = 280 - urlToAppend.length;
+            let summary = blueskySummary;
+            if (summary.length > maxSummaryLength) {
+              summary = summary.substring(0, maxSummaryLength - 3) + '...';
+            }
+            const tweetText = summary + urlToAppend;
+            try {
+              const res = await fetch('/api/twitter/post', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  text: tweetText,
+                  accessToken: twitterSession.accessToken,
+                  accessSecret: twitterSession.accessSecret
+                }),
+              });
+              const data = await res.json();
+              if (data.success) {
+                alert('✅ Posted to X (Twitter)!');
+              } else {
+                alert('❌ X (Twitter) post failed: ' + (data.error || 'Unknown error'));
+              }
+            } catch (error) {
+              console.error('X (Twitter) post error:', error);
+              alert('❌ Failed to post to X (Twitter)');
+            }
+          }} style={{ background: '#1DA1F2', color: '#fff', fontWeight: 700, fontSize: '1.1em', padding: '0.9em 2.2em', borderRadius: 999, boxShadow: '0 2px 8px #0002', marginTop: 12 }}>
             Post to X (Twitter)
           </button>
         </section>
