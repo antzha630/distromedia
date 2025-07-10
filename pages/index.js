@@ -10,6 +10,7 @@ function NewHomePage() {
   const [showBluesky, setShowBluesky] = useState(true);
   const [showLinkedIn, setShowLinkedIn] = useState(true);
   const [showTelegram, setShowTelegram] = useState(true);
+  const [showTwitter, setShowTwitter] = useState(true);
   
   // New Telegram API Login States
   const [telegramPhone, setTelegramPhone] = useState('');
@@ -200,33 +201,18 @@ function NewHomePage() {
         <h1>Welcome back, {name}</h1>
         <p style={{ fontSize: '1.5em', marginTop: '20px' }}>DistroMedia content scheduler</p>
 
-        <div style={{ margin: '30px 0 40px 0', display: 'flex', justifyContent: 'center', gap: '32px' }}>
-          <label style={{ fontWeight: 600, fontSize: '1.1em', display: 'flex', alignItems: 'center', gap: 8 }}>
-            <input
-              type="checkbox"
-              checked={showBluesky}
-              onChange={e => setShowBluesky(e.target.checked)}
-              style={{ width: 18, height: 18 }}
-            />
-            Bluesky
+        <div style={{ display: 'flex', gap: 24, alignItems: 'center', justifyContent: 'center', marginBottom: 24 }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <input type="checkbox" checked={showBluesky} onChange={() => setShowBluesky(v => !v)} /> Bluesky
           </label>
-          <label style={{ fontWeight: 600, fontSize: '1.1em', display: 'flex', alignItems: 'center', gap: 8 }}>
-            <input
-              type="checkbox"
-              checked={showLinkedIn}
-              onChange={e => setShowLinkedIn(e.target.checked)}
-              style={{ width: 18, height: 18 }}
-            />
-            LinkedIn
+          <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <input type="checkbox" checked={showLinkedIn} onChange={() => setShowLinkedIn(v => !v)} /> LinkedIn
           </label>
-          <label style={{ fontWeight: 600, fontSize: '1.1em', display: 'flex', alignItems: 'center', gap: 8 }}>
-            <input
-              type="checkbox"
-              checked={showTelegram}
-              onChange={e => setShowTelegram(e.target.checked)}
-              style={{ width: 18, height: 18 }}
-            />
-            Telegram
+          <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <input type="checkbox" checked={showTelegram} onChange={() => setShowTelegram(v => !v)} /> Telegram
+          </label>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <input type="checkbox" checked={showTwitter} onChange={() => setShowTwitter(v => !v)} /> X (Twitter)
           </label>
         </div>
 
@@ -352,21 +338,23 @@ function NewHomePage() {
           )}
 
           {/* X (Twitter) Login */}
-          <section className="card" style={{ padding: '20px', minWidth: 300, textAlign: 'center', boxShadow: '0 4px 24px rgba(0,0,0,0.15)', borderRadius: '16px' }}>
-            <div style={{ display: 'flex', justifyContent: 'center', margin: '0 auto 20px auto' }}>
-              <svg width="50" height="50" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="60" cy="60" r="60" fill="#1DA1F2"/>
-                <text x="50%" y="50%" textAnchor="middle" dy=".3em" fontSize="48" fill="#fff">X</text>
-              </svg>
-            </div>
-            <h3>Login with X (Twitter)</h3>
-            <button
-              onClick={() => window.location.href = '/api/twitter/auth'}
-              style={{ width: '100%', padding: '10px', background: '#1DA1F2', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 600, fontSize: '1em', marginTop: 8 }}
-            >
-              Log in with X (Twitter)
-            </button>
-          </section>
+          {showTwitter && (
+            <section className="card" style={{ padding: '20px', minWidth: 300, textAlign: 'center', boxShadow: '0 4px 24px rgba(0,0,0,0.15)', borderRadius: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'center', margin: '0 auto 20px auto' }}>
+                <svg width="50" height="50" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="60" cy="60" r="60" fill="#1DA1F2"/>
+                  <text x="50%" y="50%" textAnchor="middle" dy=".3em" fontSize="48" fill="#fff">X</text>
+                </svg>
+              </div>
+              <h3>Login with X (Twitter)</h3>
+              <button
+                onClick={() => window.location.href = '/api/twitter/auth'}
+                style={{ width: '100%', padding: '10px', background: '#1DA1F2', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 600, fontSize: '1em', marginTop: 8 }}
+              >
+                Log in with X (Twitter)
+              </button>
+            </section>
+          )}
         </div>
       </div>
     </main>
