@@ -34,7 +34,7 @@ export default async function handler(req, res) {
       profileImageUrl,
     };
     // Redirect to scheduler with session info
-    const redirectUrl = `/scheduler?twitterSession=${encodeURIComponent(JSON.stringify(session))}`;
+    const redirectUrl = `/?twitterSession=${encodeURIComponent(JSON.stringify(session))}`;
     res.redirect(redirectUrl);
   } catch (error) {
     console.error('Twitter callback error:', error);
