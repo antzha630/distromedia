@@ -240,30 +240,37 @@ function NewHomePage() {
                 alt="BlueSky Logo"
                 style={{ display: 'block', margin: '0 auto 20px auto', width: '50px' }}
               />
-              <h3>Login with BlueSky</h3>
-              <input
-                placeholder="Bluesky handle (e.g. @distromedia.bsky.social)"
-                value={blueskyId}
-                onChange={(e) => setBlueskyId(e.target.value)}
-                style={{ display: 'block', marginBottom: '10px', width: '100%', padding: '8px', boxSizing: 'border-box' }}
-                disabled={!!blueskySession}
-              />
-              <input
-                type="password"
-                placeholder="App Password"
-                value={blueskyPass}
-                onChange={(e) => setBlueskyPass(e.target.value)}
-                style={{ display: 'block', marginBottom: '10px', width: '100%', padding: '8px', boxSizing: 'border-box' }}
-                disabled={!!blueskySession}
-              />
-              <div style={{ fontSize: '0.95em', color: '#aaa', marginBottom: '10px' }}>
-                <span>
-                  <b>Note:</b> You must use a <a href="https://bsky.app/settings/app-passwords" target="_blank" rel="noopener noreferrer" style={{ color: '#3f51b5', textDecoration: 'underline' }}>Bluesky App Password</a> (not your main password).
-                </span>
-              </div>
-              <button onClick={loginBluesky} style={{width: '100%', padding: '10px'}} disabled={!!blueskySession}>
-                {blueskySession ? 'Logged in with Bluesky' : 'Log in to BlueSky'}
-              </button>
+              {blueskySession ? (
+                <button style={{ width: '100%', padding: '18px 0', fontSize: '1.1em', fontWeight: 700, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8 }} disabled>
+                  <img src="/images/Bluesky_Logo.png" alt="BlueSky Logo" style={{ width: 36, height: 36, marginBottom: 6 }} />
+                  Logged in with Bluesky
+                </button>
+              ) : (
+                <>
+                  <h3>Login with BlueSky</h3>
+                  <input
+                    placeholder="Bluesky handle (e.g. @distromedia.bsky.social)"
+                    value={blueskyId}
+                    onChange={(e) => setBlueskyId(e.target.value)}
+                    style={{ display: 'block', marginBottom: '10px', width: '100%', padding: '8px', boxSizing: 'border-box' }}
+                  />
+                  <input
+                    type="password"
+                    placeholder="App Password"
+                    value={blueskyPass}
+                    onChange={(e) => setBlueskyPass(e.target.value)}
+                    style={{ display: 'block', marginBottom: '10px', width: '100%', padding: '8px', boxSizing: 'border-box' }}
+                  />
+                  <div style={{ fontSize: '0.95em', color: '#aaa', marginBottom: '10px' }}>
+                    <span>
+                      <b>Note:</b> You must use a <a href="https://bsky.app/settings/app-passwords" target="_blank" rel="noopener noreferrer" style={{ color: '#3f51b5', textDecoration: 'underline' }}>Bluesky App Password</a> (not your main password).
+                    </span>
+                  </div>
+                  <button onClick={loginBluesky} style={{width: '100%', padding: '10px'}}>
+                    Log in to BlueSky
+                  </button>
+                </>
+              )}
             </section>
           )}
           {showLinkedIn && (
