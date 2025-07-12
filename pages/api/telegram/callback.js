@@ -92,8 +92,7 @@ export default async function handler(req, res) {
       };
 
       // Store in session storage and redirect to scheduler
-      const redirectUrl = `/scheduler?telegramSession=${encodeURIComponent(JSON.stringify(session))}`;
-      
+      const redirectUrl = `/?telegramSession=${encodeURIComponent(JSON.stringify(session))}`;
       res.redirect(redirectUrl);
     } catch (error) {
       console.error('Telegram callback error:', error);
