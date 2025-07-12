@@ -242,7 +242,6 @@ function NewHomePage() {
               />
               {blueskySession ? (
                 <button style={{ width: '100%', padding: '18px 0', fontSize: '1.1em', fontWeight: 700, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8 }} disabled>
-                  <img src="/images/Bluesky_Logo.png" alt="BlueSky Logo" style={{ width: 36, height: 36, marginBottom: 6 }} />
                   Logged in with Bluesky
                 </button>
               ) : (
