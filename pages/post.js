@@ -17,6 +17,11 @@ function PostPage() {
   const [telegramMessage, setTelegramMessage] = useState('');
   const [telegramGroupId, setTelegramGroupId] = useState('');
   const [twitterSession, setTwitterSession] = useState(null);
+  const [postedBluesky, setPostedBluesky] = useState(false);
+  const [postedLinkedIn, setPostedLinkedIn] = useState(false);
+  const [postedTelegramDM, setPostedTelegramDM] = useState(false);
+  const [postedTelegramGroup, setPostedTelegramGroup] = useState(false);
+  const [postedTwitter, setPostedTwitter] = useState(false);
 
   useEffect(() => {
     const storedLinkedinSummary = sessionStorage.getItem('linkedinSummary');
@@ -101,6 +106,7 @@ function PostPage() {
     if (data.success) {
       alert('✅ Posted to Bluesky!');
       setBlueskySummary('');
+      setPostedBluesky(true);
     } else {
       alert('❌ Bluesky post failed: ' + (data.error || 'Unknown error'));
     }
@@ -130,6 +136,7 @@ function PostPage() {
       const data = await res.json();
       if (data.success) {
         alert('✅ Posted to LinkedIn!');
+        setPostedLinkedIn(true);
       } else {
         alert('❌ LinkedIn post failed: ' + (data.error || 'Unknown error'));
       }
@@ -139,7 +146,7 @@ function PostPage() {
     }
   };
 
-  const postToTelegram = async (chatId) => {
+  const postToTelegram = async (chatId, isGroup = false) => {
     if (!telegramSession) {
       alert('Please log in to Telegram first via the homepage.');
       return;
@@ -165,6 +172,8 @@ function PostPage() {
       const data = await res.json();
       if (data.success) {
         alert('✅ Sent to Telegram!');
+        if (isGroup) setPostedTelegramGroup(true);
+        else setPostedTelegramDM(true);
       } else {
         alert('❌ Telegram post failed: ' + (data.error || 'Unknown error'));
       }
@@ -196,6 +205,7 @@ function PostPage() {
       const data = await res.json();
       if (data.success) {
         alert('✅ Posted to X (Twitter)!');
+        setPostedTwitter(true);
       } else {
         alert('❌ X (Twitter) post failed: ' + (data.error || 'Unknown error'));
       }
@@ -226,11 +236,13 @@ function PostPage() {
   // Post All logic
   const postAll = async () => {
     let results = [];
+    let blueskyOk = false, linkedinOk = false, telegramDMOk = false, twitterOk = false;
     // Bluesky
     if (blueskySession && blueskySummary && articleUrl && articleMetadata && blueskySummary.length <= 280) {
       try {
         await postToBluesky();
         results.push('✅ Posted to Bluesky!');
+        blueskyOk = true;
       } catch (e) {
         results.push('❌ Bluesky post failed');
       }
@@ -240,6 +252,7 @@ function PostPage() {
       try {
         await postToLinkedIn();
         results.push('✅ Posted to LinkedIn!');
+        linkedinOk = true;
       } catch (e) {
         results.push('❌ LinkedIn post failed');
       }
@@ -249,6 +262,7 @@ function PostPage() {
       try {
         await postToTelegram(telegramSession.id);
         results.push('✅ Sent to Telegram!');
+        telegramDMOk = true;
       } catch (e) {
         results.push('❌ Telegram post failed');
       }
@@ -258,6 +272,7 @@ function PostPage() {
       try {
         await postToTwitter();
         results.push('✅ Sent to X (Twitter)!');
+        twitterOk = true;
       } catch (e) {
         results.push('❌ X (Twitter) post failed');
       }
@@ -266,6 +281,10 @@ function PostPage() {
       alert('No platforms to post to. Please log in and fill out your content.');
     } else {
       alert(results.join('\n'));
+      if (blueskyOk) setPostedBluesky(true);
+      if (linkedinOk) setPostedLinkedIn(true);
+      if (telegramDMOk) setPostedTelegramDM(true);
+      if (twitterOk) setPostedTwitter(true);
     }
   };
 
@@ -388,8 +407,8 @@ function PostPage() {
           )}
           <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-start', marginTop: 10 }}>
             {linkedinSummary && (
-              <button onClick={() => handleSendClick('linkedin')} style={{ background: '#0A66C2', color: '#fff' }}>
-                Send to LinkedIn {articleUrl ? 'with Article' : ''}
+              <button onClick={() => handleSendClick('linkedin')} style={{ background: '#0A66C2', color: '#fff' }} disabled={postedLinkedIn}>
+                {postedLinkedIn ? 'Posted to LinkedIn' : `Send to LinkedIn${articleUrl ? ' with Article' : ''}`}
               </button>
             )}
           </div>
@@ -447,8 +466,8 @@ function PostPage() {
           )}
           <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-start', marginTop: 10 }}>
             {blueskySummary && (
-              <button onClick={() => handleSendClick('bluesky')} style={{ background: '#3f51b5', color: '#fff' }}>
-                Post to Bluesky
+              <button onClick={() => handleSendClick('bluesky')} style={{ background: '#3f51b5', color: '#fff' }} disabled={postedBluesky}>
+                {postedBluesky ? 'Posted to Bluesky' : 'Post to Bluesky'}
               </button>
             )}
           </div>
@@ -503,11 +522,11 @@ function PostPage() {
           <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-start', marginTop: 10 }}>
             {telegramMessage && (
               <>
-                <button onClick={() => postToTelegram(telegramSession.id)} style={{ background: '#229ED9', color: '#fff' }}>
-                  Send to Telegram DM
+                <button onClick={() => postToTelegram(telegramSession.id)} style={{ background: '#229ED9', color: '#fff' }} disabled={postedTelegramDM}>
+                  {postedTelegramDM ? 'Posted to Telegram DM' : 'Send to Telegram DM'}
                 </button>
-                <button onClick={() => postToTelegram(telegramGroupId)} style={{ background: '#229ED9', color: '#fff' }} disabled={!telegramGroupId}>
-                  Send to Telegram Group
+                <button onClick={() => postToTelegram(telegramGroupId, true)} style={{ background: '#229ED9', color: '#fff' }} disabled={!telegramGroupId || postedTelegramGroup}>
+                  {postedTelegramGroup ? 'Posted to Telegram Group' : 'Send to Telegram Group'}
                 </button>
               </>
             )}
@@ -592,6 +611,7 @@ function PostPage() {
               const data = await res.json();
               if (data.success) {
                 alert('✅ Posted to X (Twitter)!');
+                setPostedTwitter(true);
               } else {
                 alert('❌ X (Twitter) post failed: ' + (data.error || 'Unknown error'));
               }
@@ -599,8 +619,8 @@ function PostPage() {
               console.error('X (Twitter) post error:', error);
               alert('❌ Failed to post to X (Twitter)');
             }
-          }} style={{ background: '#1DA1F2', color: '#fff', fontWeight: 700, fontSize: '1.1em', padding: '0.9em 2.2em', borderRadius: 999, boxShadow: '0 2px 8px #0002', marginTop: 12 }}>
-            Post to X (Twitter)
+          }} style={{ background: '#1DA1F2', color: '#fff', fontWeight: 700, fontSize: '1.1em', padding: '0.9em 2.2em', borderRadius: 999, boxShadow: '0 2px 8px #0002', marginTop: 12 }} disabled={postedTwitter}>
+            {postedTwitter ? 'Posted to X (Twitter)' : 'Post to X (Twitter)'}
           </button>
         </section>
       )}
