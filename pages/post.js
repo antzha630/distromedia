@@ -105,7 +105,6 @@ function PostPage() {
     const data = await res.json();
     if (data.success) {
       alert('✅ Posted to Bluesky!');
-      setBlueskySummary('');
       setPostedBluesky(true);
     } else {
       alert('❌ Bluesky post failed: ' + (data.error || 'Unknown error'));
