@@ -30,6 +30,9 @@ function NewHomePage() {
   // This ref is no longer needed for the widget, but can be kept for future use or removed.
   const telegramContainerRef = useRef(null);
 
+  const [showBlueskyModal, setShowBlueskyModal] = useState(false);
+  const [showTelegramModal, setShowTelegramModal] = useState(false);
+
   useEffect(() => {
     // Check for existing sessions on mount
     const storedBlueskySession = sessionStorage.getItem('blueskySession');
@@ -213,179 +216,134 @@ function NewHomePage() {
     window.location.href = '/api/linkedin/auth';
   };
 
+  // Modal content for Bluesky
+  const BlueskyModal = () => (
+    <div className="modal-overlay">
+      <div className="modal-content">
+        <h2>Login with Bluesky</h2>
+        <input
+          placeholder="Bluesky handle (e.g. @distromedia.bsky.social)"
+          value={blueskyId}
+          onChange={(e) => setBlueskyId(e.target.value)}
+          style={{ display: 'block', marginBottom: '10px', width: '100%', padding: '8px', boxSizing: 'border-box' }}
+        />
+        <input
+          type="password"
+          placeholder="App Password"
+          value={blueskyPass}
+          onChange={(e) => setBlueskyPass(e.target.value)}
+          style={{ display: 'block', marginBottom: '10px', width: '100%', padding: '8px', boxSizing: 'border-box' }}
+        />
+        <div style={{ fontSize: '0.95em', color: '#aaa', marginBottom: '10px' }}>
+          <span>
+            <b>Note:</b> You must use a <a href="https://bsky.app/settings/app-passwords" target="_blank" rel="noopener noreferrer" style={{ color: '#3f51b5', textDecoration: 'underline' }}>Bluesky App Password</a> (not your main password).
+          </span>
+        </div>
+        <button onClick={async () => { await loginBluesky(); setShowBlueskyModal(false); }} style={{width: '100%', padding: '10px'}}>
+          Log in to Bluesky
+        </button>
+        <button onClick={() => setShowBlueskyModal(false)} style={{width: '100%', marginTop: 8}}>Cancel</button>
+      </div>
+    </div>
+  );
+
+  // Modal content for Telegram
+  const TelegramModal = () => (
+    <div className="modal-overlay">
+      <div className="modal-content">
+        <h2>Login with Telegram</h2>
+        {telegramStep === 'phone' ? (
+          <form onSubmit={handleTelegramPhoneSubmit}>
+            <input
+              type="tel"
+              placeholder="Phone number (e.g., +1234567890)"
+              value={telegramPhone}
+              onChange={(e) => setTelegramPhone(e.target.value)}
+              style={{ display: 'block', marginBottom: '10px', width: '100%', padding: '8px', boxSizing: 'border-box' }}
+              disabled={telegramLoading}
+            />
+            <button type="submit" style={{width: '100%', padding: '10px'}} disabled={telegramLoading}>
+              {telegramLoading ? 'Sending Code...' : 'Send Code'}
+            </button>
+          </form>
+        ) : (
+          <form onSubmit={handleTelegramCodeSubmit}>
+            <input
+              type="text"
+              placeholder="Enter 5-digit code"
+              value={telegramCode}
+              onChange={(e) => setTelegramCode(e.target.value)}
+              style={{ display: 'block', marginBottom: '10px', width: '100%', padding: '8px', boxSizing: 'border-box' }}
+              disabled={telegramLoading}
+              maxLength={5}
+              autoComplete="off"
+            />
+            <button type="submit" style={{width: '100%', padding: '10px', marginBottom: '10px'}} disabled={telegramLoading}>
+              {telegramLoading ? 'Verifying...' : 'Log In'}
+            </button>
+            <button type="button" onClick={resetTelegramLogin} style={{width: '100%', padding: '8px', fontSize: '0.9em', backgroundColor: '#f8f9fa', border: '1px solid #ddd', cursor: 'pointer'}} disabled={telegramLoading}>
+              Use a different number
+            </button>
+          </form>
+        )}
+        {telegramError && (
+          <div style={{ color: '#e74c3c', fontSize: '0.9em', marginTop: '10px' }}>{telegramError}</div>
+        )}
+        <button onClick={() => setShowTelegramModal(false)} style={{width: '100%', marginTop: 8}}>Cancel</button>
+      </div>
+    </div>
+  );
+
   return (
     <main className="container">
       <div style={{ textAlign: 'center', marginTop: '50px' }}>
         <h1>Welcome back, {name}</h1>
         <p style={{ fontSize: '1.5em', marginTop: '20px' }}>DistroMedia content scheduler</p>
-        <div style={{ display: 'flex', gap: 24, alignItems: 'center', justifyContent: 'center', marginBottom: 24 }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <input type="checkbox" checked={showBluesky} onChange={() => setShowBluesky(v => !v)} /> Bluesky
-          </label>
-          <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <input type="checkbox" checked={showLinkedIn} onChange={() => setShowLinkedIn(v => !v)} /> LinkedIn
-          </label>
-          <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <input type="checkbox" checked={showTelegram} onChange={() => setShowTelegram(v => !v)} /> Telegram
-          </label>
-          <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <input type="checkbox" checked={showTwitter} onChange={() => setShowTwitter(v => !v)} /> X (Twitter)
-          </label>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '32px', marginTop: 40 }}>
+          {/* Bluesky */}
+          <button
+            className="login-oval"
+            style={{ background: '#3f51b5', color: '#fff', fontWeight: 600, fontSize: '1.1em', padding: '1.2em 2.5em', borderRadius: 999, border: 'none', display: 'flex', alignItems: 'center', gap: 16, minWidth: 320, justifyContent: 'center', opacity: blueskySession ? 0.7 : 1 }}
+            onClick={() => !blueskySession && setShowBlueskyModal(true)}
+            disabled={!!blueskySession}
+          >
+            <img src="/images/Bluesky_Logo.png" alt="Bluesky" style={{ width: 32, height: 32 }} />
+            {blueskySession ? 'Logged in to Bluesky' : 'Log in to Bluesky'}
+          </button>
+          {/* LinkedIn */}
+          <button
+            className="login-oval"
+            style={{ background: '#0A66C2', color: '#fff', fontWeight: 600, fontSize: '1.1em', padding: '1.2em 2.5em', borderRadius: 999, border: 'none', display: 'flex', alignItems: 'center', gap: 16, minWidth: 320, justifyContent: 'center', opacity: linkedinSession ? 0.7 : 1 }}
+            onClick={() => { if (!linkedinSession) window.open('/api/linkedin/auth', '_blank', 'width=600,height=700'); }}
+            disabled={!!linkedinSession}
+          >
+            <img src="/images/LinkedIn_Logo.svg" alt="LinkedIn" style={{ width: 32, height: 32 }} />
+            {linkedinSession ? 'Logged in to LinkedIn' : 'Log in to LinkedIn'}
+          </button>
+          {/* Telegram */}
+          <button
+            className="login-oval"
+            style={{ background: '#229ED9', color: '#fff', fontWeight: 600, fontSize: '1.1em', padding: '1.2em 2.5em', borderRadius: 999, border: 'none', display: 'flex', alignItems: 'center', gap: 16, minWidth: 320, justifyContent: 'center', opacity: telegramSession ? 0.7 : 1 }}
+            onClick={() => !telegramSession && setShowTelegramModal(true)}
+            disabled={!!telegramSession}
+          >
+            <img src="/images/telegram-profile.png" alt="Telegram" style={{ width: 32, height: 32, borderRadius: '50%' }} />
+            {telegramSession ? 'Logged in to Telegram' : 'Log in to Telegram'}
+          </button>
+          {/* Twitter/X */}
+          <button
+            className="login-oval"
+            style={{ background: '#1DA1F2', color: '#fff', fontWeight: 600, fontSize: '1.1em', padding: '1.2em 2.5em', borderRadius: 999, border: 'none', display: 'flex', alignItems: 'center', gap: 16, minWidth: 320, justifyContent: 'center', opacity: twitterSession ? 0.7 : 1 }}
+            onClick={() => { if (!twitterSession) window.open('/api/twitter/auth', '_blank', 'width=600,height=700'); }}
+            disabled={!!twitterSession}
+          >
+            <svg width="32" height="32" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><circle cx="60" cy="60" r="60" fill="#1DA1F2"/><text x="50%" y="50%" textAnchor="middle" dy=".3em" fontSize="24" fill="#fff">X</text></svg>
+            {twitterSession ? 'Logged in to X (Twitter)' : 'Log in to X (Twitter)'}
+          </button>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '32px' }}>
-          {showBluesky && (
-            <section className="card" style={{ padding: '20px', minWidth: 300, textAlign: 'center', boxShadow: '0 4px 24px rgba(0,0,0,0.15)', borderRadius: '16px' }}>
-              <img 
-                src="/images/Bluesky_Logo.png"
-                alt="BlueSky Logo"
-                style={{ display: 'block', margin: '0 auto 20px auto', width: '50px' }}
-              />
-              {blueskySession ? (
-                <button style={{ width: '100%', padding: '18px 0', fontSize: '1.1em', fontWeight: 700, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8 }} disabled>
-                  Logged in with Bluesky
-                </button>
-              ) : (
-                <>
-                  <h3>Login with BlueSky</h3>
-                  <input
-                    placeholder="Bluesky handle (e.g. @distromedia.bsky.social)"
-                    value={blueskyId}
-                    onChange={(e) => setBlueskyId(e.target.value)}
-                    style={{ display: 'block', marginBottom: '10px', width: '100%', padding: '8px', boxSizing: 'border-box' }}
-                  />
-                  <input
-                    type="password"
-                    placeholder="App Password"
-                    value={blueskyPass}
-                    onChange={(e) => setBlueskyPass(e.target.value)}
-                    style={{ display: 'block', marginBottom: '10px', width: '100%', padding: '8px', boxSizing: 'border-box' }}
-                  />
-                  <div style={{ fontSize: '0.95em', color: '#aaa', marginBottom: '10px' }}>
-                    <span>
-                      <b>Note:</b> You must use a <a href="https://bsky.app/settings/app-passwords" target="_blank" rel="noopener noreferrer" style={{ color: '#3f51b5', textDecoration: 'underline' }}>Bluesky App Password</a> (not your main password).
-                    </span>
-                  </div>
-                  <button onClick={loginBluesky} style={{width: '100%', padding: '10px'}}>
-                    Log in to BlueSky
-                  </button>
-                </>
-              )}
-            </section>
-          )}
-          {showLinkedIn && (
-            <section className="card" style={{ padding: '20px', minWidth: 300, textAlign: 'center', boxShadow: '0 4px 24px rgba(0,0,0,0.15)', borderRadius: '16px' }}>
-              <div 
-                style={{ 
-                  color: '#0A66C2', 
-                  fontSize: '24px', 
-                  fontWeight: 'bold',
-                  marginBottom: '20px'
-                }}
-              >
-                LinkedIn
-              </div>
-              <h3>Login with LinkedIn</h3>
-              <button onClick={loginLinkedIn} style={{width: '100%', padding: '10px'}} disabled={!!linkedinSession}>
-                {linkedinSession ? 'Logged in with LinkedIn' : 'Log in with LinkedIn'}
-              </button>
-            </section>
-          )}
-          {showTelegram && (
-            <section className="card" style={{ padding: '20px', minWidth: 300, textAlign: 'center', boxShadow: '0 4px 24px rgba(0,0,0,0.15)', borderRadius: '16px' }}>
-              <div style={{ display: 'flex', justifyContent: 'center', margin: '0 auto 20px auto' }}>
-                <svg width="50" height="50" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="120" cy="120" r="120" fill="#229ED9"/>
-                  <path d="M180.5 72.5L157.5 180.5C155.5 188.5 150.5 190.5 143.5 186.5L110.5 161.5L94.5 176.5C92.5 178.5 91 180 87.5 180L90.5 145.5L157.5 84.5C160.5 81.5 157.5 80 153.5 83.5L77.5 140.5L44.5 130.5C37.5 128.5 37.5 123.5 46.5 120.5L172.5 74.5C178.5 72.5 182.5 75.5 180.5 72.5Z" fill="white"/>
-                </svg>
-              </div>
-              <h3>Login with Telegram</h3>
-              {/* If logged in, show disabled button */}
-              {telegramSession ? (
-                <button style={{width: '100%', padding: '10px'}} disabled>
-                  Logged in with Telegram
-                </button>
-              ) : (
-                telegramStep === 'phone' ? (
-                  <form onSubmit={handleTelegramPhoneSubmit}>
-                    <p style={{ fontSize: '0.9em', color: '#666', marginBottom: '10px' }}>
-                      A verification code will be sent to your Telegram app.
-                    </p>
-                    <input
-                      type="tel"
-                      placeholder="Phone number (e.g., +1234567890)"
-                      value={telegramPhone}
-                      onChange={(e) => setTelegramPhone(e.target.value)}
-                      style={{ display: 'block', marginBottom: '10px', width: '100%', padding: '8px', boxSizing: 'border-box' }}
-                      disabled={telegramLoading}
-                    />
-                    <button 
-                      type="submit" 
-                      style={{width: '100%', padding: '10px'}}
-                      disabled={telegramLoading}
-                    >
-                      {telegramLoading ? 'Sending Code...' : 'Send Code'}
-                    </button>
-                  </form>
-                ) : (
-                  <form onSubmit={handleTelegramCodeSubmit}>
-                    <div style={{ marginBottom: '10px', fontSize: '0.9em', color: '#666' }}>
-                      A code was sent to your Telegram app for the number {telegramPhone}.
-                    </div>
-                    <input
-                      type="text"
-                      placeholder="Enter 5-digit code"
-                      value={telegramCode}
-                      onChange={(e) => setTelegramCode(e.target.value)}
-                      style={{ display: 'block', marginBottom: '10px', width: '100%', padding: '8px', boxSizing: 'border-box' }}
-                      disabled={telegramLoading}
-                      maxLength={5}
-                      autoComplete="off"
-                    />
-                    <button 
-                      type="submit" 
-                      style={{width: '100%', padding: '10px', marginBottom: '10px'}}
-                      disabled={telegramLoading}
-                    >
-                      {telegramLoading ? 'Verifying...' : 'Log In'}
-                    </button>
-                    <button 
-                      type="button" 
-                      onClick={resetTelegramLogin}
-                      style={{width: '100%', padding: '8px', fontSize: '0.9em', backgroundColor: '#f8f9fa', border: '1px solid #ddd', cursor: 'pointer'}}
-                      disabled={telegramLoading}
-                    >
-                      Use a different number
-                    </button>
-                  </form>
-                )
-              )}
-              {telegramError && (
-                <div style={{ color: '#e74c3c', fontSize: '0.9em', marginTop: '10px' }}>
-                  {telegramError}
-                </div>
-              )}
-            </section>
-          )}
-          {/* X (Twitter) Login */}
-          {showTwitter && (
-            <section className="card" style={{ padding: '20px', minWidth: 300, textAlign: 'center', boxShadow: '0 4px 24px rgba(0,0,0,0.15)', borderRadius: '16px' }}>
-              <div style={{ display: 'flex', justifyContent: 'center', margin: '0 auto 20px auto' }}>
-                <svg width="50" height="50" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="60" cy="60" r="60" fill="#1DA1F2"/>
-                  <text x="50%" y="50%" textAnchor="middle" dy=".3em" fontSize="48" fill="#fff">X</text>
-                </svg>
-              </div>
-              <h3>Login with X (Twitter)</h3>
-              <button
-                onClick={() => window.location.href = '/api/twitter/auth'}
-                style={{ width: '100%', padding: '10px', background: '#1DA1F2', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 600, fontSize: '1em', marginTop: 8 }}
-                disabled={!!twitterSession}
-              >
-                {twitterSession ? 'Logged in with X (Twitter)' : 'Log in with X (Twitter)'}
-              </button>
-            </section>
-          )}
-        </div>
+        {/* Modals */}
+        {showBlueskyModal && <BlueskyModal />}
+        {showTelegramModal && <TelegramModal />}
         {/* Proceed button */}
         <div style={{ marginTop: 40 }}>
           <a href="/scheduler">
