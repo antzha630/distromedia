@@ -317,7 +317,10 @@ function NewHomePage() {
             onClick={() => { if (!linkedinSession) window.open('/api/linkedin/auth', '_blank', 'width=600,height=700'); }}
             disabled={!!linkedinSession}
           >
-            <img src="/images/LinkedIn_Logo.svg" alt="LinkedIn" style={{ width: 32, height: 32 }} />
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }}>
+              <rect width="32" height="32" rx="6" fill="#fff"/>
+              <path d="M12.1 13.6h-2.6V24h2.6V13.6zM10.8 12.5c.8 0 1.3-.5 1.3-1.2-.1-.7-.5-1.2-1.3-1.2-.8 0-1.3.5-1.3 1.2 0 .7.5 1.2 1.3 1.2zM14.1 13.6v10.4h2.6v-5.8c0-1.5.5-2.4 1.8-2.4 1.2 0 1.7.8 1.7 2.4v5.8h2.6v-6.2c0-2.7-1.4-4-3.3-4-1.5 0-2.1.8-2.5 1.4h.1v-1.2h-2.6c.1.8 0 10.4 0 10.4z" fill="#0A66C2"/>
+            </svg>
             {linkedinSession ? 'Logged in to LinkedIn' : 'Log in to LinkedIn'}
           </button>
           {/* Telegram */}
@@ -327,7 +330,10 @@ function NewHomePage() {
             onClick={() => !telegramSession && setShowTelegramModal(true)}
             disabled={!!telegramSession}
           >
-            <img src="/images/telegram-profile.png" alt="Telegram" style={{ width: 32, height: 32, borderRadius: '50%' }} />
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }}>
+              <circle cx="16" cy="16" r="16" fill="#229ED9"/>
+              <path d="M24.1 9.6l-2.2 11c-.2.8-.7 1-1.4.6l-3-2.2-1.4 1.3c-.1.1-.2.2-.4.2l.2-1.7 6.2-5.6c.3-.3-.1-.5-.4-.4l-7.7 4.8-2.6-.8c-.8-.2-.8-.8.2-1.2l12-4.6c.7-.3 1.3.2 1.1 1z" fill="#fff"/>
+            </svg>
             {telegramSession ? 'Logged in to Telegram' : 'Log in to Telegram'}
           </button>
           {/* Twitter/X */}
@@ -337,7 +343,10 @@ function NewHomePage() {
             onClick={() => { if (!twitterSession) window.open('/api/twitter/auth', '_blank', 'width=600,height=700'); }}
             disabled={!!twitterSession}
           >
-            <svg width="32" height="32" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><circle cx="60" cy="60" r="60" fill="#1DA1F2"/><text x="50%" y="50%" textAnchor="middle" dy=".3em" fontSize="24" fill="#fff">X</text></svg>
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }}>
+              <rect width="32" height="32" rx="6" fill="#1DA1F2"/>
+              <path d="M21.5 9h2.1l-4.6 5.2 5.4 7.8h-4.2l-3.2-4.7-3.7 4.7h-2.1l4.9-5.6-5.2-7.4h4.2l2.9 4.3 3.4-4.3zm-.7 10.7h1.2l-3.7-5.4-1.2 1.4 3.7 4z" fill="#fff"/>
+            </svg>
             {twitterSession ? 'Logged in to X (Twitter)' : 'Log in to X (Twitter)'}
           </button>
         </div>
