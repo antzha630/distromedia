@@ -78,11 +78,14 @@ function PostPage() {
       alert('Please fetch an article and generate a summary before posting.');
       return;
     }
-    if (blueskySummary.length > 280) {
-      alert('❌ Summary is too long. Please edit it to be under 280 characters.');
+    // Bluesky: 300 character limit, including URL
+    const urlToAppend = articleUrl ? ` ${articleUrl}` : '';
+    const totalLength = blueskySummary.length + urlToAppend.length;
+    if (totalLength > 300) {
+      alert('❌ Summary is too long. Please edit it to be 300 characters or under. Any links are included in the character count.');
       return;
     }
-    const postText = blueskySummary;
+    const postText = blueskySummary + urlToAppend;
     console.log('Posting to Bluesky with:', { postText, articleUrl, articleMetadata });
     const res = await fetch('/api/bluesky/post', {
       method: 'POST',
@@ -191,12 +194,21 @@ function PostPage() {
       alert('Please enter a summary to post.');
       return;
     }
+    // Twitter: 280 character limit, including URL
+    let urlToAppend = articleUrl ? ` ${articleUrl}` : '';
+    let maxSummaryLength = 280 - urlToAppend.length;
+    let summary = blueskySummary;
+    if (summary.length > maxSummaryLength) {
+      alert('❌ Summary is too long. Please edit it to be 280 characters or under. Any links are included in the character count.');
+      return;
+    }
+    const tweetText = summary + urlToAppend;
     try {
       const res = await fetch('/api/twitter/post', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          text: blueskySummary,
+          text: tweetText,
           accessToken: twitterSession.accessToken,
           accessSecret: twitterSession.accessSecret
         }),
@@ -286,6 +298,12 @@ function PostPage() {
       if (twitterOk) setPostedTwitter(true);
     }
   };
+
+  // Character limits
+  const BLUESKY_LIMIT = 300;
+  const TWITTER_LIMIT = 280;
+  const LINKEDIN_LIMIT = 1300;
+  const TELEGRAM_LIMIT = 4096;
 
   return (
     <main className="container">
@@ -384,6 +402,9 @@ function PostPage() {
               padding: 0
             }}
           />
+          <div style={{ textAlign: 'right', fontSize: '0.95em', color: linkedinSummary.length > LINKEDIN_LIMIT ? '#e74c3c' : '#888', marginBottom: 8 }}>
+            {linkedinSummary.length} / {LINKEDIN_LIMIT}
+          </div>
           {articleMetadata && (
             <div style={{
               border: '1.5px solid #eee',
@@ -443,6 +464,9 @@ function PostPage() {
               padding: 0
             }}
           />
+          <div style={{ textAlign: 'right', fontSize: '0.95em', color: (blueskySummary.length + (articleUrl ? articleUrl.length + 1 : 0)) > BLUESKY_LIMIT ? '#e74c3c' : '#aaa', marginBottom: 8 }}>
+            {(blueskySummary.length + (articleUrl ? articleUrl.length + 1 : 0))} / {BLUESKY_LIMIT}
+          </div>
           {articleMetadata && (
             <div style={{
               border: '1.5px solid #222',
@@ -503,6 +527,9 @@ function PostPage() {
               borderRadius: 8
             }}
           />
+          <div style={{ textAlign: 'right', fontSize: '0.95em', color: telegramMessage.length > TELEGRAM_LIMIT ? '#e74c3c' : '#aaa', marginBottom: 8 }}>
+            {telegramMessage.length} / {TELEGRAM_LIMIT}
+          </div>
           <div style={{ marginBottom: 10 }}>
             <label style={{ color: '#aaa', fontSize: '0.97em' }}>
               Group Chat ID (for group posting):
@@ -569,6 +596,9 @@ function PostPage() {
               padding: 0
             }}
           />
+          <div style={{ textAlign: 'right', fontSize: '0.95em', color: (blueskySummary.length + (articleUrl ? articleUrl.length + 1 : 0)) > TWITTER_LIMIT ? '#e74c3c' : '#aaa', marginBottom: 8 }}>
+            {(blueskySummary.length + (articleUrl ? articleUrl.length + 1 : 0))} / {TWITTER_LIMIT}
+          </div>
           {/* Embedded clickable image preview for the article, similar to Bluesky */}
           {articleMetadata && articleMetadata.image && articleUrl && (
             <a href={articleUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 16, background: '#222', borderRadius: 8, margin: '12px 0', textDecoration: 'none', color: '#f0f0f0', boxShadow: '0 1px 4px #0002', overflow: 'hidden' }}>
