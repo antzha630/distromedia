@@ -171,10 +171,29 @@ function NewHomePage() {
     const storedLinkedinSession = sessionStorage.getItem('linkedinSession');
     const storedTelegramSession = sessionStorage.getItem('telegramSession');
     const storedTwitterSession = sessionStorage.getItem('twitterSession');
+    
+    // Also check localStorage for OAuth sessions
+    const localLinkedinSession = localStorage.getItem('linkedinSession');
+    const localTwitterSession = localStorage.getItem('twitterSession');
+    
     if (storedBlueskySession) setBlueskySession(JSON.parse(storedBlueskySession));
     if (storedLinkedinSession) setLinkedinSession(JSON.parse(storedLinkedinSession));
     if (storedTelegramSession) setTelegramSession(JSON.parse(storedTelegramSession));
     if (storedTwitterSession) setTwitterSession(JSON.parse(storedTwitterSession));
+    
+    // Handle localStorage sessions (from OAuth callbacks)
+    if (localLinkedinSession && !storedLinkedinSession) {
+      const session = JSON.parse(localLinkedinSession);
+      sessionStorage.setItem('linkedinSession', JSON.stringify(session));
+      setLinkedinSession(session);
+      localStorage.removeItem('linkedinSession'); // Clean up
+    }
+    if (localTwitterSession && !storedTwitterSession) {
+      const session = JSON.parse(localTwitterSession);
+      sessionStorage.setItem('twitterSession', JSON.stringify(session));
+      setTwitterSession(session);
+      localStorage.removeItem('twitterSession'); // Clean up
+    }
 
     // Handle LinkedIn OAuth callback
     const linkedinData = router.query.linkedin;
