@@ -71,9 +71,42 @@ export default async function handler(req, res) {
       expiresAt: Date.now() + (tokenData.expires_in * 1000),
     };
 
-    // Redirect to frontend with session data
-    const redirectUrl = `/?linkedin=${encodeURIComponent(JSON.stringify(session))}`;
-    res.redirect(redirectUrl);
+    // Return HTML that communicates with the original window and closes this one
+    const html = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>LinkedIn Login Success</title>
+        </head>
+        <body>
+          <script>
+            try {
+              // Store session in localStorage for the original window
+              localStorage.setItem('linkedinSession', JSON.stringify(${JSON.stringify(session)}));
+              
+              // If this window was opened from another window, close it and refresh the original
+              if (window.opener) {
+                // Refresh the original window to pick up the new session
+                window.opener.location.reload();
+                // Close this window
+                window.close();
+              } else {
+                // Fallback: redirect to main page with session data
+                window.location.href = '/?linkedin=${encodeURIComponent(JSON.stringify(session))}';
+              }
+            } catch (error) {
+              console.error('Error handling OAuth callback:', error);
+              // Fallback redirect
+              window.location.href = '/?linkedin=${encodeURIComponent(JSON.stringify(session))}';
+            }
+          </script>
+          <p>LinkedIn login successful! This window will close automatically...</p>
+        </body>
+      </html>
+    `;
+    
+    res.setHeader('Content-Type', 'text/html');
+    res.send(html);
   } catch (error) {
     console.error('LinkedIn callback error:', error);
     res.redirect(`/?error=${encodeURIComponent('Internal server error')}`);

@@ -33,9 +33,43 @@ export default async function handler(req, res) {
       screenName,
       profileImageUrl,
     };
-    // Redirect to scheduler with session info
-    const redirectUrl = `/?twitterSession=${encodeURIComponent(JSON.stringify(session))}`;
-    res.redirect(redirectUrl);
+    
+    // Return HTML that communicates with the original window and closes this one
+    const html = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Twitter Login Success</title>
+        </head>
+        <body>
+          <script>
+            try {
+              // Store session in localStorage for the original window
+              localStorage.setItem('twitterSession', JSON.stringify(${JSON.stringify(session)}));
+              
+              // If this window was opened from another window, close it and refresh the original
+              if (window.opener) {
+                // Refresh the original window to pick up the new session
+                window.opener.location.reload();
+                // Close this window
+                window.close();
+              } else {
+                // Fallback: redirect to main page with session data
+                window.location.href = '/?twitterSession=${encodeURIComponent(JSON.stringify(session))}';
+              }
+            } catch (error) {
+              console.error('Error handling OAuth callback:', error);
+              // Fallback redirect
+              window.location.href = '/?twitterSession=${encodeURIComponent(JSON.stringify(session))}';
+            }
+          </script>
+          <p>Twitter login successful! This window will close automatically...</p>
+        </body>
+      </html>
+    `;
+    
+    res.setHeader('Content-Type', 'text/html');
+    res.send(html);
   } catch (error) {
     console.error('Twitter callback error:', error);
     res.status(500).json({ error: 'Failed to complete Twitter OAuth' });
