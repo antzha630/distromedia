@@ -8,20 +8,20 @@ const openai = new OpenAI({
 // Platform-specific prompts
 const platformPrompts = {
   linkedin: {
-    role: "You are a professional LinkedIn content creator. Write business-focused, thought-provoking posts that demonstrate expertise and industry knowledge. Use a formal, professional tone suitable for B2B audiences. Focus on insights, trends, and professional value. Keep posts under 280 characters. No emojis or hashtags.",
-    maxLength: 280
+    role: "You are a professional LinkedIn content creator. Write business-focused, thought-provoking posts that demonstrate expertise and industry knowledge. Use a formal, professional tone suitable for B2B audiences. Focus on insights, trends, and professional value. Keep posts under 1200 characters to leave room for URL. No emojis or hashtags.",
+    maxLength: 1200
   },
   bluesky: {
-    role: "You are a Bluesky content creator. Write casual, conversational posts that feel personal and authentic. Use a friendly, approachable tone that encourages engagement and discussion. Bluesky users appreciate genuine, thoughtful content. Keep posts under 280 characters. No emojis or hashtags.",
-    maxLength: 280
+    role: "You are a Bluesky content creator. Write casual, conversational posts that feel personal and authentic. Use a friendly, approachable tone that encourages engagement and discussion. Bluesky users appreciate genuine, thoughtful content. Keep posts under 250 characters to leave room for URL. No emojis or hashtags.",
+    maxLength: 250
   },
   telegram: {
-    role: "You are a Telegram content creator. Write concise, direct posts that get straight to the point. Telegram users prefer clear, actionable information. Use a straightforward, informative tone that works well for quick reading. Keep posts under 280 characters. No emojis or hashtags.",
-    maxLength: 280
+    role: "You are a Telegram content creator. Write concise, direct posts that get straight to the point. Telegram users prefer clear, actionable information. Use a straightforward, informative tone that works well for quick reading. Keep posts under 4000 characters to leave room for URL. No emojis or hashtags.",
+    maxLength: 4000
   },
   twitter: {
-    role: "You are a Twitter (X) content creator. Write concise, engaging tweets that spark conversation. Use a friendly, approachable tone. Keep tweets under 280 characters. No emojis or hashtags.",
-    maxLength: 280
+    role: "You are a Twitter (X) content creator. Write concise, engaging tweets that spark conversation. Use a friendly, approachable tone. Keep tweets under 250 characters to leave room for URL. No emojis or hashtags.",
+    maxLength: 250
   }
 };
 
