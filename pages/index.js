@@ -389,8 +389,8 @@ function NewHomePage() {
   return (
     <main className="container">
       <div style={{ textAlign: 'center', marginTop: '50px' }}>
-        <h1>Welcome back, {name}</h1>
-        <p style={{ fontSize: '1.5em', marginTop: '20px' }}>DistroMedia content scheduler</p>
+        <h1>Welcome</h1>
+        <p style={{ fontSize: '1.5em', marginTop: '20px' }}>Distro Media channel management module</p>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '32px', marginTop: 40 }}>
           {/* Bluesky */}
           <button
