@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/router';
 
 function NewHomePage() {
@@ -216,41 +216,77 @@ function NewHomePage() {
     window.location.href = '/api/linkedin/auth';
   };
 
-  // Modal content for Bluesky
-  const BlueskyModal = () => (
-    <div className="modal-overlay">
-      <div className="modal-content">
+  // Modal content for Bluesky - moved outside render
+  const BlueskyModal = useCallback(() => (
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      width: '100vw',
+      height: '100vh',
+      background: 'rgba(0,0,0,0.5)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 1000
+    }}>
+      <div style={{
+        background: '#232526',
+        padding: '2rem',
+        borderRadius: '12px',
+        minWidth: 320,
+        maxWidth: 400,
+        color: '#f0f0f0'
+      }}>
         <h2>Login with Bluesky</h2>
         <input
           placeholder="Bluesky handle (e.g. @distromedia.bsky.social)"
           value={blueskyId}
           onChange={(e) => setBlueskyId(e.target.value)}
-          style={{ display: 'block', marginBottom: '10px', width: '100%', padding: '8px', boxSizing: 'border-box' }}
+          style={{ display: 'block', marginBottom: '10px', width: '100%', padding: '8px', boxSizing: 'border-box', borderRadius: '4px', border: '1px solid #444', background: '#2a2a2a', color: '#f0f0f0' }}
         />
         <input
           type="password"
           placeholder="App Password"
           value={blueskyPass}
           onChange={(e) => setBlueskyPass(e.target.value)}
-          style={{ display: 'block', marginBottom: '10px', width: '100%', padding: '8px', boxSizing: 'border-box' }}
+          style={{ display: 'block', marginBottom: '10px', width: '100%', padding: '8px', boxSizing: 'border-box', borderRadius: '4px', border: '1px solid #444', background: '#2a2a2a', color: '#f0f0f0' }}
         />
         <div style={{ fontSize: '0.95em', color: '#aaa', marginBottom: '10px' }}>
           <span>
             <b>Note:</b> You must use a <a href="https://bsky.app/settings/app-passwords" target="_blank" rel="noopener noreferrer" style={{ color: '#3f51b5', textDecoration: 'underline' }}>Bluesky App Password</a> (not your main password).
           </span>
         </div>
-        <button onClick={async () => { await loginBluesky(); setShowBlueskyModal(false); }} style={{width: '100%', padding: '10px'}}>
+        <button onClick={async () => { await loginBluesky(); setShowBlueskyModal(false); }} style={{width: '100%', padding: '10px', background: '#3f51b5', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer'}}>
           Log in to Bluesky
         </button>
-        <button onClick={() => setShowBlueskyModal(false)} style={{width: '100%', marginTop: 8}}>Cancel</button>
+        <button onClick={() => setShowBlueskyModal(false)} style={{width: '100%', marginTop: 8, padding: '8px', background: '#444', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer'}}>Cancel</button>
       </div>
     </div>
-  );
+  ), [blueskyId, blueskyPass, loginBluesky]);
 
-  // Modal content for Telegram
-  const TelegramModal = () => (
-    <div className="modal-overlay">
-      <div className="modal-content">
+  // Modal content for Telegram - moved outside render
+  const TelegramModal = useCallback(() => (
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      width: '100vw',
+      height: '100vh',
+      background: 'rgba(0,0,0,0.5)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 1000
+    }}>
+      <div style={{
+        background: '#232526',
+        padding: '2rem',
+        borderRadius: '12px',
+        minWidth: 320,
+        maxWidth: 400,
+        color: '#f0f0f0'
+      }}>
         <h2>Login with Telegram</h2>
         {telegramStep === 'phone' ? (
           <form onSubmit={handleTelegramPhoneSubmit}>
@@ -259,10 +295,10 @@ function NewHomePage() {
               placeholder="Phone number (e.g., +1234567890)"
               value={telegramPhone}
               onChange={(e) => setTelegramPhone(e.target.value)}
-              style={{ display: 'block', marginBottom: '10px', width: '100%', padding: '8px', boxSizing: 'border-box' }}
+              style={{ display: 'block', marginBottom: '10px', width: '100%', padding: '8px', boxSizing: 'border-box', borderRadius: '4px', border: '1px solid #444', background: '#2a2a2a', color: '#f0f0f0' }}
               disabled={telegramLoading}
             />
-            <button type="submit" style={{width: '100%', padding: '10px'}} disabled={telegramLoading}>
+            <button type="submit" style={{width: '100%', padding: '10px', background: '#229ED9', color: '#fff', border: 'none', borderRadius: '4px', cursor: telegramLoading ? 'not-allowed' : 'pointer'}} disabled={telegramLoading}>
               {telegramLoading ? 'Sending Code...' : 'Send Code'}
             </button>
           </form>
@@ -273,15 +309,15 @@ function NewHomePage() {
               placeholder="Enter 5-digit code"
               value={telegramCode}
               onChange={(e) => setTelegramCode(e.target.value)}
-              style={{ display: 'block', marginBottom: '10px', width: '100%', padding: '8px', boxSizing: 'border-box' }}
+              style={{ display: 'block', marginBottom: '10px', width: '100%', padding: '8px', boxSizing: 'border-box', borderRadius: '4px', border: '1px solid #444', background: '#2a2a2a', color: '#f0f0f0' }}
               disabled={telegramLoading}
               maxLength={5}
               autoComplete="off"
             />
-            <button type="submit" style={{width: '100%', padding: '10px', marginBottom: '10px'}} disabled={telegramLoading}>
+            <button type="submit" style={{width: '100%', padding: '10px', marginBottom: '10px', background: '#229ED9', color: '#fff', border: 'none', borderRadius: '4px', cursor: telegramLoading ? 'not-allowed' : 'pointer'}} disabled={telegramLoading}>
               {telegramLoading ? 'Verifying...' : 'Log In'}
             </button>
-            <button type="button" onClick={resetTelegramLogin} style={{width: '100%', padding: '8px', fontSize: '0.9em', backgroundColor: '#f8f9fa', border: '1px solid #ddd', cursor: 'pointer'}} disabled={telegramLoading}>
+            <button type="button" onClick={resetTelegramLogin} style={{width: '100%', padding: '8px', fontSize: '0.9em', backgroundColor: '#444', border: '1px solid #666', cursor: telegramLoading ? 'not-allowed' : 'pointer', color: '#fff', borderRadius: '4px'}} disabled={telegramLoading}>
               Use a different number
             </button>
           </form>
@@ -289,10 +325,10 @@ function NewHomePage() {
         {telegramError && (
           <div style={{ color: '#e74c3c', fontSize: '0.9em', marginTop: '10px' }}>{telegramError}</div>
         )}
-        <button onClick={() => setShowTelegramModal(false)} style={{width: '100%', marginTop: 8}}>Cancel</button>
+        <button onClick={() => setShowTelegramModal(false)} style={{width: '100%', marginTop: 8, padding: '8px', background: '#444', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer'}}>Cancel</button>
       </div>
     </div>
-  );
+  ), [telegramStep, telegramPhone, telegramCode, telegramLoading, telegramError, handleTelegramPhoneSubmit, handleTelegramCodeSubmit, resetTelegramLogin]);
 
   return (
     <main className="container">
