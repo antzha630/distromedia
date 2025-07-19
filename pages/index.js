@@ -286,9 +286,17 @@ function NewHomePage() {
       const data = await res.json();
       
       if (res.ok && data.success) {
+        alert('✅ Logged into Telegram');
         sessionStorage.setItem('telegramSession', JSON.stringify(data.session));
         setTelegramSession(data.session);
-        router.replace('/', undefined, { shallow: true });
+        setShowTelegramModal(false); // Close the modal
+        // Reset the form
+        setTelegramPhone('');
+        setTelegramCode('');
+        setTelegramStep('phone');
+        setTelegramError('');
+        setTelegramPhoneCodeHash('');
+        setTelegramSessionString('');
       } else {
         setTelegramError(data.error || 'Invalid code. Please try again.');
       }
