@@ -408,8 +408,10 @@ function NewHomePage() {
   return (
     <main className="container">
       <div style={{ textAlign: 'center', marginTop: '50px' }}>
-        <h1>Welcome</h1>
-        <p style={{ fontSize: '1.5em', marginTop: '20px' }}>Distro Media channel management module</p>
+        <p style={{ fontSize: '1.5em', marginTop: '20px', fontWeight: 700 }}>Distro Channel Management Module</p>
+        <p style={{ fontSize: '1.1em', marginTop: '16px', marginBottom: '32px', color: '#fff' }}>
+          Create social media content from your articles and send posts, all without leaving Distro.
+        </p>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '32px', marginTop: 40 }}>
           {/* Bluesky */}
           <button
