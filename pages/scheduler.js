@@ -251,12 +251,9 @@ function SchedulerPage() {
 
   return (
     <main className="container">
-      <h1>🧠 AI Content Generator</h1>
-      <p style={{ textAlign: 'left', marginTop: '10px', marginBottom: '30px' }}>
-        This is where you can create social media content from your articles and publish them, all without leaving DistroMedia!
-        <br />
-        <br />
-        Currently, you are signed in as:
+      <h1>🧠 Content Loader</h1>
+      <div style={{ textAlign: 'left', marginTop: '10px', marginBottom: '30px' }}>
+        <span style={{ fontWeight: 500 }}>Currently, you are signed in as:</span>
         <br />
         {linkedinSession && (
           <>
@@ -306,7 +303,7 @@ function SchedulerPage() {
             <br />
           </>
         )}
-      </p>
+      </div>
 
       <section className="card">
         <label htmlFor="urlInput">Article URL:</label>
