@@ -5,7 +5,7 @@ function MyApp({ Component, pageProps }) {
     <>
       <Component {...pageProps} />
       <footer className="footer">
-        © {new Date().getFullYear()} DistroMedia &bull; All rights reserved
+        © {new Date().getFullYear()} Distro Media &bull; All rights reserved
       </footer>
     </>
   );
