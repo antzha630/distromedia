@@ -358,7 +358,15 @@ function SchedulerPage() {
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
           readOnly
-          style={{ backgroundColor: '#f5f5f5', cursor: 'not-allowed' }}
+          style={{ 
+            backgroundColor: '#2a2a2a', 
+            color: '#ffffff',
+            border: '1px solid #444',
+            borderRadius: '8px',
+            padding: '12px',
+            cursor: 'not-allowed',
+            fontFamily: 'inherit'
+          }}
         />
         <button onClick={summarize} disabled={summarizing}>{summarizing ? 'Summarizing...' : 'Summarize'}</button>
       </section>
