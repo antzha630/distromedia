@@ -350,13 +350,15 @@ function SchedulerPage() {
           </div>
         )}
 
-        <label htmlFor="articleInput">Or paste your article text:</label>
+        <label htmlFor="articleInput">Article Content (Auto-populated from URL):</label>
         <textarea
           id="articleInput"
           rows="6"
-          placeholder="Paste text here..."
+          placeholder="Article content will appear here after fetching from URL..."
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
+          readOnly
+          style={{ backgroundColor: '#f5f5f5', cursor: 'not-allowed' }}
         />
         <button onClick={summarize} disabled={summarizing}>{summarizing ? 'Summarizing...' : 'Summarize'}</button>
       </section>
