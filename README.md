@@ -39,82 +39,11 @@ DistroMedia is a comprehensive social media management platform that allows user
 - **Deployment**: Vercel
 - **Environment**: Node.js with ES modules
 
-## 📋 Prerequisites
+## 🌐 Live Application
 
-Before running this project, you'll need:
+DistroMedia is currently hosted and available at: **[Your Vercel URL]**
 
-- Node.js 18+ 
-- npm or yarn
-- API keys for the social platforms you want to use:
-  - OpenAI API key
-  - LinkedIn Developer App credentials
-  - Twitter Developer App credentials
-  - Bluesky account with app password
-  - Telegram API credentials (API ID, API Hash, Bot Token)
-
-## 🚀 Getting Started
-
-### 1. Clone the Repository
-```bash
-git clone https://github.com/antzha630/distromedia.git
-cd distromedia
-```
-
-### 2. Install Dependencies
-```bash
-npm install
-```
-
-### 3. Environment Setup
-Create a `.env.local` file in the root directory:
-
-```env
-# OpenAI Configuration
-OPENAI_API_KEY=your_openai_api_key_here
-
-# LinkedIn Configuration
-LINKEDIN_CLIENT_ID=your_linkedin_client_id
-LINKEDIN_CLIENT_SECRET=your_linkedin_client_secret
-
-# Twitter Configuration
-TWITTER_API_KEY=your_twitter_api_key
-TWITTER_API_SECRET=your_twitter_api_secret
-TWITTER_ACCESS_TOKEN=your_twitter_access_token
-TWITTER_ACCESS_TOKEN_SECRET=your_twitter_access_token_secret
-
-# Telegram Configuration
-TELEGRAM_API_ID=your_telegram_api_id
-TELEGRAM_API_HASH=your_telegram_api_hash
-TELEGRAM_BOT_TOKEN=your_telegram_bot_token
-```
-
-### 4. Run Development Server
-```bash
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) to view the application.
-
-## 📱 Platform Setup Guides
-
-### LinkedIn Setup
-1. Create a LinkedIn Developer App
-2. Configure OAuth redirect URLs
-3. Add your client ID and secret to environment variables
-
-### Twitter Setup
-1. Apply for Twitter Developer Account
-2. Create a new app in Twitter Developer Portal
-3. Generate API keys and access tokens
-4. Add credentials to environment variables
-
-### Bluesky Setup
-1. Create a Bluesky account
-2. Generate an app password at [bsky.app/settings/app-passwords](https://bsky.app/settings/app-passwords)
-3. Use your handle and app password for authentication
-
-### Telegram Setup
-See [TELEGRAM_SETUP.md](./TELEGRAM_SETUP.md) for detailed Telegram configuration instructions.
+The application is fully functional and ready to use for content creation and social media distribution across all supported platforms.
 
 ## 🏗️ Project Structure
 
@@ -152,15 +81,28 @@ The platform uses OpenAI's GPT-3.5-turbo to automatically generate platform-opti
 - Secure API key management
 - No hardcoded credentials in source code
 
+## 🔮 Future Roadmap
+
+### MCP (Model Context Protocol) Integration
+- **Enhanced AI Capabilities**: Integration with MCP to provide more sophisticated content generation and analysis
+- **Advanced Context Understanding**: Better understanding of content context and user intent
+- **Improved Platform Optimization**: More nuanced platform-specific content adaptation
+
+### NLP Pipeline for Style Analysis
+- **Competitor Analysis**: Advanced NLP pipeline to analyze how other companies write their articles
+- **Style Mimicking**: Automatically adapt content to match successful writing styles from industry leaders
+- **Content Optimization**: Learn from high-performing content patterns and apply them to generated posts
+- **Brand Voice Adaptation**: Customize content generation to match specific brand voices and tones
+
+### Enhanced Features
+- **Multi-language Support**: Content generation in multiple languages
+- **Advanced Analytics**: Detailed performance metrics across platforms
+- **Content Calendar**: Visual scheduling and content planning tools
+- **Team Collaboration**: Multi-user support with role-based permissions
+
 ## 🚀 Deployment
 
-### Vercel Deployment
-1. Connect your GitHub repository to Vercel
-2. Add environment variables in Vercel dashboard
-3. Deploy automatically on git push
-
-### Environment Variables in Production
-Make sure to add all required environment variables in your deployment platform's environment settings.
+DistroMedia is deployed on Vercel with automatic deployments from the main branch. The application is configured with all necessary environment variables for production use.
 
 ## 📝 Usage
 
