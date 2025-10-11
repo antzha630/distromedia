@@ -32,7 +32,7 @@ export default async function handler(req, res) {
       content: content
     };
 
-    console.log('Sending to Distro API:', payload);
+    console.log('Sending to Distro API:', JSON.stringify(payload, null, 2));
 
     // Send to Distro API
     const apiKey = process.env.DISTRO_API_KEY || '<aF+{:R>+lULOYbykL.z8s3m$zd;M,@A';

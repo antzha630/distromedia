@@ -247,6 +247,9 @@ function PostPage() {
         content: articleMetadata.articleText || `${articleMetadata.title}\n\n${articleMetadata.description || ''}`
       };
 
+      console.log('Distro payload:', JSON.stringify(payload, null, 2));
+      console.log('Article metadata:', articleMetadata);
+
       const res = await fetch('/api/distro/post', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
