@@ -237,14 +237,25 @@ function PostPage() {
     }
 
     try {
+      // Clean the strings to ensure they're properly formatted
+      const cleanPreview = (linkedinSummary || twitterSummary || blueskySummary || telegramMessage || "AI-generated summary")
+        .replace(/\n\s*\+\s*'/g, '')
+        .replace(/'/g, '')
+        .trim();
+      
+      const cleanContent = (articleMetadata.articleText || `${articleMetadata.title}\n\n${articleMetadata.description || ''}`)
+        .replace(/\n\s*\+\s*'/g, '')
+        .replace(/'/g, '')
+        .trim();
+
       const payload = {
         user_info: { name: "Distro Scout User" },
         more_info_url: articleUrl,
         source: "DistroMedia",
         cost: 10,
-        preview: linkedinSummary || twitterSummary || blueskySummary || telegramMessage || "AI-generated summary",
-        title: articleMetadata.title,
-        content: articleMetadata.articleText || `${articleMetadata.title}\n\n${articleMetadata.description || ''}`
+        preview: cleanPreview,
+        title: articleMetadata.title.trim(),
+        content: cleanContent
       };
 
       console.log('Distro payload:', JSON.stringify(payload, null, 2));
