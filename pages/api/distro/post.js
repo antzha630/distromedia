@@ -48,6 +48,9 @@ export default async function handler(req, res) {
       body: JSON.stringify(payload)
     });
 
+    console.log('Distro API response status:', distroResponse.status);
+    console.log('Distro API response headers:', Object.fromEntries(distroResponse.headers.entries()));
+
     if (!distroResponse.ok) {
       const errorText = await distroResponse.text();
       console.error('Distro API error:', errorText);
@@ -57,6 +60,7 @@ export default async function handler(req, res) {
     }
 
     const distroData = await distroResponse.json();
+    console.log('Distro API response data:', JSON.stringify(distroData, null, 2));
     
     return res.status(200).json({ 
       success: true, 
