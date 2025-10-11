@@ -21,15 +21,20 @@ export default async function handler(req, res) {
       });
     }
 
+    // Clean the strings to remove any formatting issues
+    const cleanPreview = typeof preview === 'string' ? preview.replace(/\n\s*\+\s*'/g, '').replace(/'/g, '').trim() : preview;
+    const cleanContent = typeof content === 'string' ? content.replace(/\n\s*\+\s*'/g, '').replace(/'/g, '').trim() : content;
+    const cleanTitle = typeof title === 'string' ? title.trim() : title;
+
     // Prepare payload for Distro API
     const payload = {
       user_info: user_info || { name: "Distro Scout User" },
       more_info_url: more_info_url,
       source: source || "DistroMedia",
       cost: cost || 10,
-      preview: preview,
-      title: title,
-      content: content
+      preview: cleanPreview,
+      title: cleanTitle,
+      content: cleanContent
     };
 
     console.log('Sending to Distro API:', JSON.stringify(payload, null, 2));
