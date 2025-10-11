@@ -119,6 +119,17 @@ function SchedulerPage() {
       });
       const dataTelegram = await resTelegram.json();
 
+      // Twitter summary (engaging tweets)
+      const resTwitter = await fetch('/api/summarize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: inputText,
+          platform: 'twitter'
+        }),
+      });
+      const dataTwitter = await resTwitter.json();
+
       if (dataLinkedIn.summary) {
         sessionStorage.setItem('linkedinSummary', dataLinkedIn.summary);
       }
@@ -128,7 +139,10 @@ function SchedulerPage() {
       if (dataTelegram.summary) {
         sessionStorage.setItem('telegramMessage', dataTelegram.summary);
       }
-      if (!dataLinkedIn.summary && !dataBluesky.summary && !dataTelegram.summary) {
+      if (dataTwitter.summary) {
+        sessionStorage.setItem('twitterSummary', dataTwitter.summary);
+      }
+      if (!dataLinkedIn.summary && !dataBluesky.summary && !dataTelegram.summary && !dataTwitter.summary) {
         alert('❌ No summary was generated. Please try again.');
       } else {
         alert('✅ Summaries generated! Go to the Post page to review and post.');

@@ -17,11 +17,13 @@ function PostPage() {
   const [telegramMessage, setTelegramMessage] = useState('');
   const [telegramGroupId, setTelegramGroupId] = useState('');
   const [twitterSession, setTwitterSession] = useState(null);
+  const [twitterSummary, setTwitterSummary] = useState('');
   const [postedBluesky, setPostedBluesky] = useState(false);
   const [postedLinkedIn, setPostedLinkedIn] = useState(false);
   const [postedTelegramDM, setPostedTelegramDM] = useState(false);
   const [postedTelegramGroup, setPostedTelegramGroup] = useState(false);
   const [postedTwitter, setPostedTwitter] = useState(false);
+  const [postedDistro, setPostedDistro] = useState(false);
 
   useEffect(() => {
     const storedLinkedinSummary = sessionStorage.getItem('linkedinSummary');
@@ -35,6 +37,7 @@ function PostPage() {
     const storedTelegramSession = sessionStorage.getItem('telegramSession');
     const storedTelegramMessage = sessionStorage.getItem('telegramMessage');
     const storedTwitterSession = sessionStorage.getItem('twitterSession');
+    const storedTwitterSummary = sessionStorage.getItem('twitterSummary');
 
     if (storedLinkedinSummary) setLinkedinSummary(storedLinkedinSummary);
     if (storedBlueskySummary) setBlueskySummary(storedBlueskySummary);
@@ -47,6 +50,7 @@ function PostPage() {
     if (storedTelegramSession) setTelegramSession(JSON.parse(storedTelegramSession));
     if (storedTelegramMessage) setTelegramMessage(storedTelegramMessage);
     if (storedTwitterSession) setTwitterSession(JSON.parse(storedTwitterSession));
+    if (storedTwitterSummary) setTwitterSummary(storedTwitterSummary);
 
     // Handle Twitter session from URL
     if (router.query.twitterSession) {
@@ -190,14 +194,14 @@ function PostPage() {
       alert('Please log in to X (Twitter) first via the homepage.');
       return;
     }
-    if (!blueskySummary) {
+    if (!twitterSummary) {
       alert('Please enter a summary to post.');
       return;
     }
     // Twitter: 280 character limit, including URL
     let urlToAppend = articleUrl ? ` ${articleUrl}` : '';
     let maxSummaryLength = 280 - urlToAppend.length;
-    let summary = blueskySummary;
+    let summary = twitterSummary;
     if (summary.length > maxSummaryLength) {
       alert('❌ Summary is too long. Please edit it to be 280 characters or under. Any links are included in the character count.');
       return;
@@ -226,6 +230,42 @@ function PostPage() {
     }
   };
 
+  const postToDistro = async () => {
+    if (!articleUrl || !articleMetadata) {
+      alert('Please fetch an article and generate a summary before sending to Distro.');
+      return;
+    }
+
+    try {
+      const payload = {
+        user_info: { name: "Distro Scout User" },
+        more_info_url: articleUrl,
+        source: "DistroMedia",
+        cost: 10,
+        preview: linkedinSummary || twitterSummary || blueskySummary || telegramMessage || "AI-generated summary",
+        title: articleMetadata.title,
+        content: articleMetadata.articleText || `${articleMetadata.title}\n\n${articleMetadata.description || ''}`
+      };
+
+      const res = await fetch('/api/distro/post', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        alert('✅ Successfully sent to Distro!');
+        setPostedDistro(true);
+      } else {
+        alert('❌ Distro post failed: ' + (data.error || 'Unknown error'));
+      }
+    } catch (error) {
+      console.error('Distro post error:', error);
+      alert('❌ Failed to send to Distro');
+    }
+  };
+
   // Confirmation modal logic
   const handleSendClick = (platform) => {
     setPendingAction(platform);
@@ -237,6 +277,7 @@ function PostPage() {
     if (pendingAction === 'bluesky') postToBluesky();
     if (pendingAction === 'telegram') postToTelegram(telegramSession.id);
     if (pendingAction === 'twitter') postToTwitter();
+    if (pendingAction === 'distro') postToDistro();
     setPendingAction(null);
   };
   const handleModalNo = () => {
@@ -247,7 +288,7 @@ function PostPage() {
   // Post All logic
   const postAll = async () => {
     let results = [];
-    let blueskyOk = false, linkedinOk = false, telegramDMOk = false, twitterOk = false;
+    let blueskyOk = false, linkedinOk = false, telegramDMOk = false, twitterOk = false, distroOk = false;
     // Bluesky
     if (blueskySession && blueskySummary && articleUrl && articleMetadata && blueskySummary.length <= 280) {
       try {
@@ -279,13 +320,23 @@ function PostPage() {
       }
     }
     // Twitter (DM only)
-    if (twitterSession && blueskySummary) {
+    if (twitterSession && twitterSummary) {
       try {
         await postToTwitter();
         results.push('✅ Sent to X (Twitter)!');
         twitterOk = true;
       } catch (e) {
         results.push('❌ X (Twitter) post failed');
+      }
+    }
+    // Distro (always available if article metadata exists)
+    if (articleUrl && articleMetadata) {
+      try {
+        await postToDistro();
+        results.push('✅ Sent to Distro!');
+        distroOk = true;
+      } catch (e) {
+        results.push('❌ Distro post failed');
       }
     }
     if (results.length === 0) {
@@ -296,6 +347,7 @@ function PostPage() {
       if (linkedinOk) setPostedLinkedIn(true);
       if (telegramDMOk) setPostedTelegramDM(true);
       if (twitterOk) setPostedTwitter(true);
+      if (distroOk) setPostedDistro(true);
     }
   };
 
@@ -578,8 +630,8 @@ function PostPage() {
           </div>
           <textarea
             rows="3"
-            value={blueskySummary}
-            onChange={(e) => setBlueskySummary(e.target.value)}
+            value={twitterSummary}
+            onChange={(e) => setTwitterSummary(e.target.value)}
             style={{
               width: '100%',
               border: 'none',
@@ -596,8 +648,8 @@ function PostPage() {
               padding: 0
             }}
           />
-          <div style={{ textAlign: 'right', fontSize: '0.95em', color: (blueskySummary.length + (articleUrl ? articleUrl.length + 1 : 0)) > TWITTER_LIMIT ? '#e74c3c' : '#aaa', marginBottom: 8 }}>
-            {(blueskySummary.length + (articleUrl ? articleUrl.length + 1 : 0))} / {TWITTER_LIMIT}
+          <div style={{ textAlign: 'right', fontSize: '0.95em', color: (twitterSummary.length + (articleUrl ? articleUrl.length + 1 : 0)) > TWITTER_LIMIT ? '#e74c3c' : '#aaa', marginBottom: 8 }}>
+            {(twitterSummary.length + (articleUrl ? articleUrl.length + 1 : 0))} / {TWITTER_LIMIT}
           </div>
           {/* Embedded clickable image preview for the article, similar to Bluesky */}
           {articleMetadata && articleMetadata.image && articleUrl && (
@@ -615,14 +667,14 @@ function PostPage() {
               alert('Please log in to X (Twitter) first via the homepage.');
               return;
             }
-            if (!blueskySummary) {
+            if (!twitterSummary) {
               alert('Please enter a summary to post.');
               return;
             }
             // Always append the article URL and ensure total length <= 280
             let urlToAppend = articleUrl ? ` ${articleUrl}` : '';
             let maxSummaryLength = 280 - urlToAppend.length;
-            let summary = blueskySummary;
+            let summary = twitterSummary;
             if (summary.length > maxSummaryLength) {
               summary = summary.substring(0, maxSummaryLength - 3) + '...';
             }
@@ -654,8 +706,66 @@ function PostPage() {
         </section>
       )}
 
-      {/* Post All Button: show if logged into at least 2 platforms */}
-      {(!!blueskySession + !!linkedinSession + !!telegramSession + !!twitterSession >= 2) && (
+      {/* Distro Section - Always available, no login required */}
+      {articleMetadata && (
+        <section className="card" style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: '#fff', maxWidth: 600, margin: '0 auto 32px auto', boxShadow: '0 2px 12px #0002', border: '2px solid #764ba2' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 8 }}>
+            <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5em', fontWeight: 'bold' }}>
+              D
+            </div>
+            <div>
+              <div style={{ fontWeight: 700, fontSize: '1.1em' }}>Distro Scout</div>
+              <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.95em' }}>Web3 News Platform</div>
+            </div>
+          </div>
+          
+          <div style={{ 
+            background: 'rgba(255,255,255,0.1)', 
+            borderRadius: 12, 
+            padding: '15px', 
+            marginBottom: 12,
+            border: '1px solid rgba(255,255,255,0.2)'
+          }}>
+            <div style={{ fontWeight: 600, fontSize: '1.1em', marginBottom: 8 }}>Article Preview</div>
+            <div style={{ fontSize: '1.05em', marginBottom: 4 }}>{articleMetadata.title}</div>
+            <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.95em', marginBottom: 8 }}>{articleMetadata.description}</div>
+            <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.9em' }}>
+              Source: {articleUrl && (new URL(articleUrl)).hostname}
+            </div>
+          </div>
+
+          <div style={{ 
+            background: 'rgba(255,255,255,0.1)', 
+            borderRadius: 8, 
+            padding: '12px', 
+            marginBottom: 12,
+            border: '1px solid rgba(255,255,255,0.2)'
+          }}>
+            <div style={{ fontSize: '0.95em', marginBottom: 4, color: 'rgba(255,255,255,0.8)' }}>Preview:</div>
+            <div style={{ fontSize: '1em' }}>
+              {linkedinSummary || twitterSummary || blueskySummary || telegramMessage || "AI-generated summary will appear here"}
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-start', marginTop: 10 }}>
+            <button 
+              onClick={() => handleSendClick('distro')} 
+              style={{ 
+                background: 'rgba(255,255,255,0.2)', 
+                color: '#fff', 
+                border: '1px solid rgba(255,255,255,0.3)',
+                fontWeight: 600
+              }} 
+              disabled={postedDistro}
+            >
+              {postedDistro ? 'Sent to Distro' : 'Send to Distro'}
+            </button>
+          </div>
+        </section>
+      )}
+
+      {/* Post All Button: show if logged into at least 2 platforms OR have article metadata for Distro */}
+      {(!!blueskySession + !!linkedinSession + !!telegramSession + !!twitterSession >= 2 || (articleUrl && articleMetadata)) && (
         <div style={{ textAlign: 'center', marginBottom: 24 }}>
           <button onClick={postAll} style={{ background: 'linear-gradient(90deg, #3f51b5 0%, #229ED9 100%)', color: '#fff', fontWeight: 700, fontSize: '1.1em', padding: '0.9em 2.2em', borderRadius: 999, boxShadow: '0 2px 8px #0002' }}>
             Post All
