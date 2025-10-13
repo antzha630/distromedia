@@ -24,6 +24,10 @@ function PostPage() {
   const [postedTelegramGroup, setPostedTelegramGroup] = useState(false);
   const [postedTwitter, setPostedTwitter] = useState(false);
   const [postedDistro, setPostedDistro] = useState(false);
+  const [isEditingDistro, setIsEditingDistro] = useState(false);
+  const [editedDistroTitle, setEditedDistroTitle] = useState('');
+  const [editedDistroDescription, setEditedDistroDescription] = useState('');
+  const [editedDistroContent, setEditedDistroContent] = useState('');
 
   useEffect(() => {
     const storedLinkedinSummary = sessionStorage.getItem('linkedinSummary');
@@ -51,6 +55,14 @@ function PostPage() {
     if (storedTelegramMessage) setTelegramMessage(storedTelegramMessage);
     if (storedTwitterSession) setTwitterSession(JSON.parse(storedTwitterSession));
     if (storedTwitterSummary) setTwitterSummary(storedTwitterSummary);
+
+    // Initialize edited values when metadata loads
+    if (storedArticleMetadata && !editedDistroTitle) {
+      const metadata = JSON.parse(storedArticleMetadata);
+      setEditedDistroTitle(metadata.title);
+      setEditedDistroDescription(storedLinkedinSummary || storedBlueskySummary || storedTelegramMessage || storedTwitterSummary || "AI-generated summary");
+      setEditedDistroContent(metadata.articleText || `${metadata.title}\n\n${metadata.description || ''}`);
+    }
 
     // Handle Twitter session from URL
     if (router.query.twitterSession) {
@@ -237,13 +249,18 @@ function PostPage() {
     }
 
     try {
+      // Use edited values if available, otherwise use original values
+      const titleToUse = editedDistroTitle || articleMetadata.title;
+      const descriptionToUse = editedDistroDescription || (linkedinSummary || twitterSummary || blueskySummary || telegramMessage || "AI-generated summary");
+      const contentToUse = editedDistroContent || (articleMetadata.articleText || `${articleMetadata.title}\n\n${articleMetadata.description || ''}`);
+
       // Clean the strings to ensure they're properly formatted
-      const cleanPreview = (linkedinSummary || twitterSummary || blueskySummary || telegramMessage || "AI-generated summary")
+      const cleanPreview = descriptionToUse
         .replace(/\n\s*\+\s*'/g, '')
         .replace(/'/g, '')
         .trim();
       
-      const cleanContent = (articleMetadata.articleText || `${articleMetadata.title}\n\n${articleMetadata.description || ''}`)
+      const cleanContent = contentToUse
         .replace(/\n\s*\+\s*'/g, '')
         .replace(/'/g, '')
         .trim();
@@ -254,7 +271,7 @@ function PostPage() {
         source: "DistroMedia",
         cost: 10,
         preview: cleanPreview,
-        title: articleMetadata.title.trim(),
+        title: titleToUse.trim(),
         content: cleanContent
       };
 
@@ -723,7 +740,7 @@ function PostPage() {
       {/* Distro Section - Always available, no login required */}
       {articleMetadata && (
         <section className="card" style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: '#fff', maxWidth: 600, margin: '0 auto 32px auto', boxShadow: '0 2px 12px #0002', border: '2px solid #764ba2' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 20 }}>
             <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5em', fontWeight: 'bold' }}>
               D
             </div>
@@ -733,47 +750,181 @@ function PostPage() {
             </div>
           </div>
           
+          {/* Form-style interface */}
           <div style={{ 
-            background: 'rgba(255,255,255,0.1)', 
+            background: 'rgba(255,255,255,0.95)', 
             borderRadius: 12, 
-            padding: '15px', 
-            marginBottom: 12,
-            border: '1px solid rgba(255,255,255,0.2)'
+            padding: '20px', 
+            color: '#333',
+            fontFamily: 'system-ui, -apple-system, sans-serif'
           }}>
-            <div style={{ fontWeight: 600, fontSize: '1.1em', marginBottom: 8 }}>Article Preview</div>
-            <div style={{ fontSize: '1.05em', marginBottom: 4 }}>{articleMetadata.title}</div>
-            <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.95em', marginBottom: 8 }}>{articleMetadata.description}</div>
-            <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.9em' }}>
-              Source: {articleUrl && (new URL(articleUrl)).hostname}
+            {/* Headline/Title */}
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ display: 'block', fontWeight: 600, marginBottom: 8, color: '#8B4513' }}>Headline/Title:</label>
+              <input 
+                type="text" 
+                value={isEditingDistro ? editedDistroTitle : articleMetadata.title}
+                onChange={isEditingDistro ? (e) => setEditedDistroTitle(e.target.value) : undefined}
+                readOnly={!isEditingDistro}
+                style={{ 
+                  width: '100%', 
+                  padding: '12px', 
+                  border: '1px solid #ddd', 
+                  borderRadius: 8, 
+                  fontSize: '16px',
+                  background: isEditingDistro ? '#fff' : '#f9f9f9',
+                  cursor: isEditingDistro ? 'text' : 'default'
+                }}
+              />
             </div>
-          </div>
 
-          <div style={{ 
-            background: 'rgba(255,255,255,0.1)', 
-            borderRadius: 8, 
-            padding: '12px', 
-            marginBottom: 12,
-            border: '1px solid rgba(255,255,255,0.2)'
-          }}>
-            <div style={{ fontSize: '0.95em', marginBottom: 4, color: 'rgba(255,255,255,0.8)' }}>Preview:</div>
-            <div style={{ fontSize: '1em' }}>
-              {linkedinSummary || twitterSummary || blueskySummary || telegramMessage || "AI-generated summary will appear here"}
+            {/* Publication Name */}
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ display: 'block', fontWeight: 600, marginBottom: 8, color: '#8B4513' }}>Publication Name:</label>
+              <input 
+                type="text" 
+                value={articleUrl ? (new URL(articleUrl)).hostname : 'Unknown'}
+                readOnly
+                style={{ 
+                  width: '100%', 
+                  padding: '12px', 
+                  border: '1px solid #ddd', 
+                  borderRadius: 8, 
+                  fontSize: '16px',
+                  background: '#f9f9f9'
+                }}
+              />
             </div>
-          </div>
 
-          <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-start', marginTop: 10 }}>
-            <button 
-              onClick={() => handleSendClick('distro')} 
-              style={{ 
-                background: 'rgba(255,255,255,0.2)', 
-                color: '#fff', 
-                border: '1px solid rgba(255,255,255,0.3)',
-                fontWeight: 600
-              }} 
-              disabled={postedDistro}
-            >
-              {postedDistro ? 'Sent to Distro' : 'Send to Distro'}
-            </button>
+            {/* URL */}
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ display: 'block', fontWeight: 600, marginBottom: 8, color: '#8B4513' }}>URL:</label>
+              <input 
+                type="text" 
+                value={articleUrl}
+                readOnly
+                style={{ 
+                  width: '100%', 
+                  padding: '12px', 
+                  border: '1px solid #ddd', 
+                  borderRadius: 8, 
+                  fontSize: '16px',
+                  background: '#f9f9f9'
+                }}
+              />
+            </div>
+
+            {/* Description */}
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ display: 'block', fontWeight: 600, marginBottom: 8, color: '#8B4513' }}>Description:</label>
+              <textarea 
+                value={isEditingDistro ? editedDistroDescription : (linkedinSummary || twitterSummary || blueskySummary || telegramMessage || "AI-generated summary will appear here")}
+                onChange={isEditingDistro ? (e) => setEditedDistroDescription(e.target.value) : undefined}
+                readOnly={!isEditingDistro}
+                rows={4}
+                style={{ 
+                  width: '100%', 
+                  padding: '12px', 
+                  border: '1px solid #ddd', 
+                  borderRadius: 8, 
+                  fontSize: '16px',
+                  background: isEditingDistro ? '#fff' : '#f9f9f9',
+                  resize: 'vertical',
+                  cursor: isEditingDistro ? 'text' : 'default'
+                }}
+              />
+            </div>
+
+            {/* Story/Content */}
+            <div style={{ marginBottom: 20 }}>
+              <label style={{ display: 'block', fontWeight: 600, marginBottom: 8, color: '#8B4513' }}>Story/Content:</label>
+              <textarea 
+                value={isEditingDistro ? editedDistroContent : (articleMetadata.articleText || `${articleMetadata.title}\n\n${articleMetadata.description || ''}`)}
+                onChange={isEditingDistro ? (e) => setEditedDistroContent(e.target.value) : undefined}
+                readOnly={!isEditingDistro}
+                rows={6}
+                style={{ 
+                  width: '100%', 
+                  padding: '12px', 
+                  border: '1px solid #ddd', 
+                  borderRadius: 8, 
+                  fontSize: '16px',
+                  background: isEditingDistro ? '#fff' : '#f9f9f9',
+                  resize: 'vertical',
+                  cursor: isEditingDistro ? 'text' : 'default'
+                }}
+              />
+            </div>
+
+            {/* Action Buttons */}
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+              {!isEditingDistro ? (
+                <button 
+                  onClick={() => setIsEditingDistro(true)}
+                  style={{ 
+                    padding: '12px 24px', 
+                    border: '1px solid #ddd', 
+                    borderRadius: 8, 
+                    background: '#fff',
+                    color: '#333',
+                    fontSize: '16px',
+                    cursor: 'pointer',
+                    fontWeight: 500
+                  }}
+                >
+                  Edit Post
+                </button>
+              ) : (
+                <>
+                  <button 
+                    onClick={() => setIsEditingDistro(false)}
+                    style={{ 
+                      padding: '12px 24px', 
+                      border: '1px solid #ddd', 
+                      borderRadius: 8, 
+                      background: '#f5f5f5',
+                      color: '#666',
+                      fontSize: '16px',
+                      cursor: 'pointer',
+                      fontWeight: 500
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    onClick={() => setIsEditingDistro(false)}
+                    style={{ 
+                      padding: '12px 24px', 
+                      border: '1px solid #ddd', 
+                      borderRadius: 8, 
+                      background: '#4CAF50',
+                      color: '#fff',
+                      fontSize: '16px',
+                      cursor: 'pointer',
+                      fontWeight: 500
+                    }}
+                  >
+                    Save Changes
+                  </button>
+                </>
+              )}
+              <button 
+                onClick={() => handleSendClick('distro')} 
+                style={{ 
+                  padding: '12px 24px', 
+                  border: '1px solid #ddd', 
+                  borderRadius: 8, 
+                  background: '#fff',
+                  color: '#333',
+                  fontSize: '16px',
+                  cursor: 'pointer',
+                  fontWeight: 500
+                }} 
+                disabled={postedDistro}
+              >
+                {postedDistro ? 'Sent to Distro' : 'Send to Distro'}
+              </button>
+            </div>
           </div>
         </section>
       )}
