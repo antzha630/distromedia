@@ -746,7 +746,6 @@ function PostPage() {
             </div>
             <div>
               <div style={{ fontWeight: 700, fontSize: '1.1em' }}>Distro Scout</div>
-              <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.95em' }}>Web3 News Platform</div>
             </div>
           </div>
           
@@ -773,7 +772,8 @@ function PostPage() {
                   borderRadius: 8, 
                   fontSize: '16px',
                   background: isEditingDistro ? '#fff' : '#f9f9f9',
-                  cursor: isEditingDistro ? 'text' : 'default'
+                  cursor: isEditingDistro ? 'text' : 'default',
+                  color: '#333'
                 }}
               />
             </div>
@@ -791,7 +791,8 @@ function PostPage() {
                   border: '1px solid #ddd', 
                   borderRadius: 8, 
                   fontSize: '16px',
-                  background: '#f9f9f9'
+                  background: '#f9f9f9',
+                  color: '#333'
                 }}
               />
             </div>
@@ -809,7 +810,8 @@ function PostPage() {
                   border: '1px solid #ddd', 
                   borderRadius: 8, 
                   fontSize: '16px',
-                  background: '#f9f9f9'
+                  background: '#f9f9f9',
+                  color: '#333'
                 }}
               />
             </div>
@@ -831,7 +833,8 @@ function PostPage() {
                   background: isEditingDistro ? '#fff' : '#f9f9f9',
                   resize: 'vertical',
                   cursor: isEditingDistro ? 'text' : 'default',
-                  minHeight: isEditingDistro ? '200px' : '150px'
+                  minHeight: isEditingDistro ? '200px' : '150px',
+                  color: '#333'
                 }}
               />
             </div>
@@ -853,7 +856,8 @@ function PostPage() {
                   background: isEditingDistro ? '#fff' : '#f9f9f9',
                   resize: 'vertical',
                   cursor: isEditingDistro ? 'text' : 'default',
-                  minHeight: isEditingDistro ? '300px' : '200px'
+                  minHeight: isEditingDistro ? '300px' : '200px',
+                  color: '#333'
                 }}
               />
             </div>
