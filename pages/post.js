@@ -821,7 +821,7 @@ function PostPage() {
                 value={isEditingDistro ? editedDistroDescription : (linkedinSummary || twitterSummary || blueskySummary || telegramMessage || "AI-generated summary will appear here")}
                 onChange={isEditingDistro ? (e) => setEditedDistroDescription(e.target.value) : undefined}
                 readOnly={!isEditingDistro}
-                rows={4}
+                rows={isEditingDistro ? 8 : 6}
                 style={{ 
                   width: '100%', 
                   padding: '12px', 
@@ -830,7 +830,8 @@ function PostPage() {
                   fontSize: '16px',
                   background: isEditingDistro ? '#fff' : '#f9f9f9',
                   resize: 'vertical',
-                  cursor: isEditingDistro ? 'text' : 'default'
+                  cursor: isEditingDistro ? 'text' : 'default',
+                  minHeight: isEditingDistro ? '200px' : '150px'
                 }}
               />
             </div>
@@ -842,7 +843,7 @@ function PostPage() {
                 value={isEditingDistro ? editedDistroContent : (articleMetadata.articleText || `${articleMetadata.title}\n\n${articleMetadata.description || ''}`)}
                 onChange={isEditingDistro ? (e) => setEditedDistroContent(e.target.value) : undefined}
                 readOnly={!isEditingDistro}
-                rows={6}
+                rows={isEditingDistro ? 12 : 8}
                 style={{ 
                   width: '100%', 
                   padding: '12px', 
@@ -851,7 +852,8 @@ function PostPage() {
                   fontSize: '16px',
                   background: isEditingDistro ? '#fff' : '#f9f9f9',
                   resize: 'vertical',
-                  cursor: isEditingDistro ? 'text' : 'default'
+                  cursor: isEditingDistro ? 'text' : 'default',
+                  minHeight: isEditingDistro ? '300px' : '200px'
                 }}
               />
             </div>
