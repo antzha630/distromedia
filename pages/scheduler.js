@@ -202,6 +202,40 @@ function SchedulerPage() {
     }
   };
 
+  // Navigate to Post page with confirmation if nothing to summarize
+  const handleGoToPostPage = () => {
+    const hasAnySummary = !!sessionStorage.getItem('linkedinSummary') ||
+      !!sessionStorage.getItem('blueskySummary') ||
+      !!sessionStorage.getItem('telegramMessage') ||
+      !!sessionStorage.getItem('twitterSummary');
+
+    const noContentToSummarize = !inputText || inputText.trim().length === 0;
+
+    if (noContentToSummarize && !hasAnySummary) {
+      const proceed = window.confirm('You have not summarized yet. Are you sure you want to proceed?');
+      if (!proceed) return;
+    }
+
+    // Carry the URL forward even if scraping failed
+    if (articleUrl && articleUrl.trim().length > 0) {
+      sessionStorage.setItem('articleUrl', articleUrl.trim());
+    }
+
+    // Ensure fields are empty for manual entry if we didn't summarize
+    if (!hasAnySummary) {
+      sessionStorage.removeItem('linkedinSummary');
+      sessionStorage.removeItem('blueskySummary');
+      sessionStorage.removeItem('telegramMessage');
+      sessionStorage.removeItem('twitterSummary');
+    }
+    // Remove any stale metadata if fetch failed
+    if (noContentToSummarize) {
+      sessionStorage.removeItem('articleMetadata');
+    }
+
+    router.push('/post');
+  };
+
   const postToLinkedIn = async () => {
     if (!linkedinSession) {
       alert('Please log in to LinkedIn first via the homepage.');
@@ -386,9 +420,7 @@ function SchedulerPage() {
       </section>
 
       <div style={{ textAlign: 'center', marginTop: '30px', marginBottom: '40px' }}>
-        <a href="/post">
-          <button style={{ minWidth: 200 }}>Go to Post Page</button>
-        </a>
+        <button style={{ minWidth: 200 }} onClick={handleGoToPostPage}>Go to Post Page</button>
       </div>
 
       {(!blueskySession || !linkedinSession || !telegramSession || !twitterSession) && (
