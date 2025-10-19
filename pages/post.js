@@ -56,12 +56,19 @@ function PostPage() {
     if (storedTwitterSession) setTwitterSession(JSON.parse(storedTwitterSession));
     if (storedTwitterSummary) setTwitterSummary(storedTwitterSummary);
 
-    // Initialize edited values when metadata loads
+    // Initialize edited values when metadata loads or when we have a URL but no metadata
     if (storedArticleMetadata && !editedDistroTitle) {
       const metadata = JSON.parse(storedArticleMetadata);
       setEditedDistroTitle(metadata.title);
       setEditedDistroDescription(storedLinkedinSummary || storedBlueskySummary || storedTelegramMessage || storedTwitterSummary || "AI-generated summary");
       setEditedDistroContent(metadata.articleText || `${metadata.title}\n\n${metadata.description || ''}`);
+    } else if (storedArticleUrl && !storedArticleMetadata && !editedDistroTitle) {
+      // Create basic metadata from URL when scraping failed
+      const urlObj = new URL(storedArticleUrl);
+      const basicTitle = `Article from ${urlObj.hostname}`;
+      setEditedDistroTitle(basicTitle);
+      setEditedDistroDescription(storedLinkedinSummary || storedBlueskySummary || storedTelegramMessage || storedTwitterSummary || "Enter your summary here...");
+      setEditedDistroContent(`Content from: ${storedArticleUrl}\n\nEnter the article content here...`);
     }
 
     // Handle Twitter session from URL
@@ -243,16 +250,16 @@ function PostPage() {
   };
 
   const postToDistro = async () => {
-    if (!articleUrl || !articleMetadata) {
-      alert('Please fetch an article and generate a summary before sending to Distro.');
+    if (!articleUrl) {
+      alert('Please enter an article URL before sending to Distro.');
       return;
     }
 
     try {
-      // Use edited values if available, otherwise use original values
-      const titleToUse = editedDistroTitle || articleMetadata.title;
-      const descriptionToUse = editedDistroDescription || (linkedinSummary || twitterSummary || blueskySummary || telegramMessage || "AI-generated summary");
-      const contentToUse = editedDistroContent || (articleMetadata.articleText || `${articleMetadata.title}\n\n${articleMetadata.description || ''}`);
+      // Use edited values if available, otherwise use fallback values
+      const titleToUse = editedDistroTitle || articleMetadata?.title || `Article from ${new URL(articleUrl).hostname}`;
+      const descriptionToUse = editedDistroDescription || (linkedinSummary || twitterSummary || blueskySummary || telegramMessage || "Enter your summary here...");
+      const contentToUse = editedDistroContent || (articleMetadata?.articleText || `${articleMetadata?.title || ''}\n\n${articleMetadata?.description || ''}` || `Content from: ${articleUrl}\n\nEnter the article content here...`);
 
       // Clean the strings to ensure they're properly formatted
       const cleanPreview = descriptionToUse
@@ -738,7 +745,7 @@ function PostPage() {
       )}
 
       {/* Distro Section - Always available, no login required */}
-      {articleMetadata && (
+      {articleUrl && (
         <section className="card" style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: '#fff', maxWidth: 600, margin: '0 auto 32px auto', boxShadow: '0 2px 12px #0002', border: '2px solid #764ba2' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 20 }}>
             <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5em', fontWeight: 'bold' }}>
@@ -746,6 +753,11 @@ function PostPage() {
             </div>
             <div>
               <div style={{ fontWeight: 700, fontSize: '1.1em' }}>Distro Scout</div>
+              {!articleMetadata && (
+                <div style={{ fontSize: '0.9em', opacity: 0.8, marginTop: 4 }}>
+                  ⚠️ Article scraping failed - you can still edit and send manually
+                </div>
+              )}
             </div>
           </div>
           
@@ -762,7 +774,7 @@ function PostPage() {
               <label style={{ display: 'block', fontWeight: 600, marginBottom: 8, color: '#8B4513' }}>Headline/Title:</label>
               <input 
                 type="text" 
-                value={isEditingDistro ? editedDistroTitle : articleMetadata.title}
+                value={isEditingDistro ? editedDistroTitle : (articleMetadata?.title || editedDistroTitle || 'Enter article title...')}
                 onChange={isEditingDistro ? (e) => setEditedDistroTitle(e.target.value) : undefined}
                 readOnly={!isEditingDistro}
                 style={{ 
@@ -843,7 +855,7 @@ function PostPage() {
             <div style={{ marginBottom: 20 }}>
               <label style={{ display: 'block', fontWeight: 600, marginBottom: 8, color: '#8B4513' }}>Story/Content:</label>
               <textarea 
-                value={isEditingDistro ? editedDistroContent : (articleMetadata.articleText || `${articleMetadata.title}\n\n${articleMetadata.description || ''}`)}
+                value={isEditingDistro ? editedDistroContent : (articleMetadata?.articleText || `${articleMetadata?.title || ''}\n\n${articleMetadata?.description || ''}` || editedDistroContent || 'Enter article content here...')}
                 onChange={isEditingDistro ? (e) => setEditedDistroContent(e.target.value) : undefined}
                 readOnly={!isEditingDistro}
                 rows={isEditingDistro ? 12 : 8}

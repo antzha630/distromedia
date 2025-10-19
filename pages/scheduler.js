@@ -228,8 +228,9 @@ function SchedulerPage() {
       sessionStorage.removeItem('telegramMessage');
       sessionStorage.removeItem('twitterSummary');
     }
-    // Remove any stale metadata if fetch failed
-    if (noContentToSummarize) {
+    // Keep basic URL info even if scraping failed - we'll create a basic preview
+    // Only remove metadata if there's no URL at all
+    if (!articleUrl || articleUrl.trim().length === 0) {
       sessionStorage.removeItem('articleMetadata');
     }
 
