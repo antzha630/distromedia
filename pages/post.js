@@ -62,13 +62,15 @@ function PostPage() {
       setEditedDistroTitle(metadata.title);
       setEditedDistroDescription(storedLinkedinSummary || storedBlueskySummary || storedTelegramMessage || storedTwitterSummary || "AI-generated summary");
       setEditedDistroContent(metadata.articleText || `${metadata.title}\n\n${metadata.description || ''}`);
-    } else if (storedArticleUrl && !storedArticleMetadata && !editedDistroTitle) {
+    } else if (storedArticleUrl && !storedArticleMetadata) {
       // Create basic metadata from URL when scraping failed
       const urlObj = new URL(storedArticleUrl);
       const basicTitle = `Article from ${urlObj.hostname}`;
-      setEditedDistroTitle(basicTitle);
-      setEditedDistroDescription(storedLinkedinSummary || storedBlueskySummary || storedTelegramMessage || storedTwitterSummary || "Enter your summary here...");
-      setEditedDistroContent(`Content from: ${storedArticleUrl}\n\nEnter the article content here...`);
+      if (!editedDistroTitle) {
+        setEditedDistroTitle(basicTitle);
+        setEditedDistroDescription(storedLinkedinSummary || storedBlueskySummary || storedTelegramMessage || storedTwitterSummary || "Enter your summary here...");
+        setEditedDistroContent(`Content from: ${storedArticleUrl}\n\nEnter the article content here...`);
+      }
       // Make fields editable by default when scraping failed
       setIsEditingDistro(true);
     }
@@ -99,8 +101,8 @@ function PostPage() {
       alert('Please log in to Bluesky first via the homepage.');
       return;
     }
-    if (!articleUrl || !articleMetadata) {
-      alert('Please fetch an article and generate a summary before posting.');
+    if (!articleUrl) {
+      alert('Please enter an article URL before posting.');
       return;
     }
     // Bluesky: 300 character limit, including URL
@@ -119,15 +121,15 @@ function PostPage() {
         text: postText,
         accessJwt: blueskySession.accessJwt,
         did: blueskySession.did,
-        embed: articleMetadata ? {
+        embed: {
           $type: 'app.bsky.embed.external',
           external: {
             uri: articleUrl,
-            title: articleMetadata.title,
-            description: articleMetadata.description,
-            thumb: articleMetadata.image || undefined,
+            title: articleMetadata?.title || `Article from ${new URL(articleUrl).hostname}`,
+            description: articleMetadata?.description || 'Click to read the full article...',
+            thumb: articleMetadata?.image || undefined,
           }
-        } : undefined
+        }
       }),
     });
     const data = await res.json();
@@ -145,7 +147,7 @@ function PostPage() {
       return;
     }
     if (!articleUrl) {
-      alert('Please fetch an article and generate a summary before posting.');
+      alert('Please enter an article URL before posting.');
       return;
     }
     console.log('Posting to LinkedIn with:', { linkedinSummary, articleUrl, articleMetadata });
@@ -330,7 +332,7 @@ function PostPage() {
     let results = [];
     let blueskyOk = false, linkedinOk = false, telegramDMOk = false, twitterOk = false, distroOk = false;
     // Bluesky
-    if (blueskySession && blueskySummary && articleUrl && articleMetadata && blueskySummary.length <= 280) {
+    if (blueskySession && blueskySummary && articleUrl && blueskySummary.length <= 280) {
       try {
         await postToBluesky();
         results.push('✅ Posted to Bluesky!');
