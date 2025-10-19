@@ -69,6 +69,8 @@ function PostPage() {
       setEditedDistroTitle(basicTitle);
       setEditedDistroDescription(storedLinkedinSummary || storedBlueskySummary || storedTelegramMessage || storedTwitterSummary || "Enter your summary here...");
       setEditedDistroContent(`Content from: ${storedArticleUrl}\n\nEnter the article content here...`);
+      // Make fields editable by default when scraping failed
+      setIsEditingDistro(true);
     }
 
     // Handle Twitter session from URL
@@ -495,7 +497,7 @@ function PostPage() {
           <div style={{ textAlign: 'right', fontSize: '0.95em', color: linkedinSummary.length > LINKEDIN_LIMIT ? '#e74c3c' : '#888', marginBottom: 8 }}>
             {linkedinSummary.length} / {LINKEDIN_LIMIT}
           </div>
-          {articleMetadata && (
+          {articleUrl && (
             <div style={{
               border: '1.5px solid #eee',
               borderRadius: 12,
@@ -505,13 +507,34 @@ function PostPage() {
               background: '#fafbfc',
               overflow: 'hidden'
             }}>
-              {articleMetadata.image && (
+              {articleMetadata?.image ? (
                 <img src={articleMetadata.image} alt={articleMetadata.title} style={{ width: 120, height: 80, objectFit: 'cover', borderRadius: '12px 0 0 12px' }} />
+              ) : (
+                <div style={{
+                  width: 120,
+                  height: 80,
+                  background: 'linear-gradient(135deg, #0A66C2 0%, #004182 100%)',
+                  borderRadius: '12px 0 0 12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#fff',
+                  fontSize: '24px',
+                  fontWeight: 'bold'
+                }}>
+                  📄
+                </div>
               )}
               <div style={{ padding: '10px 14px', flex: 1 }}>
-                <div style={{ fontWeight: 700, fontSize: '1.05em', marginBottom: 2 }}>{articleMetadata.title}</div>
-                <div style={{ color: '#666', fontSize: '0.97em', marginBottom: 2 }}>{articleMetadata.description}</div>
-                <div style={{ color: '#888', fontSize: '0.93em', marginTop: 2 }}>{articleUrl && (new URL(articleUrl)).hostname}</div>
+                <div style={{ fontWeight: 700, fontSize: '1.05em', marginBottom: 2 }}>
+                  {articleMetadata?.title || `Article from ${new URL(articleUrl).hostname}`}
+                </div>
+                <div style={{ color: '#666', fontSize: '0.97em', marginBottom: 2 }}>
+                  {articleMetadata?.description || 'Click to read the full article...'}
+                </div>
+                <div style={{ color: '#888', fontSize: '0.93em', marginTop: 2 }}>
+                  {new URL(articleUrl).hostname}
+                </div>
               </div>
             </div>
           )}
@@ -557,7 +580,7 @@ function PostPage() {
           <div style={{ textAlign: 'right', fontSize: '0.95em', color: (blueskySummary.length + (articleUrl ? articleUrl.length + 1 : 0)) > BLUESKY_LIMIT ? '#e74c3c' : '#aaa', marginBottom: 8 }}>
             {(blueskySummary.length + (articleUrl ? articleUrl.length + 1 : 0))} / {BLUESKY_LIMIT}
           </div>
-          {articleMetadata && (
+          {articleUrl && (
             <div style={{
               border: '1.5px solid #222',
               borderRadius: 12,
@@ -567,13 +590,34 @@ function PostPage() {
               display: 'flex',
               alignItems: 'flex-start'
             }}>
-              {articleMetadata.image && (
+              {articleMetadata?.image ? (
                 <img src={articleMetadata.image} alt={articleMetadata.title} style={{ width: 120, height: 80, objectFit: 'cover', borderRadius: '12px 0 0 12px' }} />
+              ) : (
+                <div style={{
+                  width: 120,
+                  height: 80,
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  borderRadius: '12px 0 0 12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#fff',
+                  fontSize: '24px',
+                  fontWeight: 'bold'
+                }}>
+                  📄
+                </div>
               )}
               <div style={{ padding: '10px 14px', flex: 1 }}>
-                <div style={{ fontWeight: 700, fontSize: '1.05em', marginBottom: 2 }}>{articleMetadata.title}</div>
-                <div style={{ color: '#aaa', fontSize: '0.97em', marginBottom: 2 }}>{articleMetadata.description}</div>
-                <div style={{ color: '#888', fontSize: '0.93em', marginTop: 2 }}>{articleUrl && (new URL(articleUrl)).hostname}</div>
+                <div style={{ fontWeight: 700, fontSize: '1.05em', marginBottom: 2 }}>
+                  {articleMetadata?.title || `Article from ${new URL(articleUrl).hostname}`}
+                </div>
+                <div style={{ color: '#aaa', fontSize: '0.97em', marginBottom: 2 }}>
+                  {articleMetadata?.description || 'Click to read the full article...'}
+                </div>
+                <div style={{ color: '#888', fontSize: '0.93em', marginTop: 2 }}>
+                  {new URL(articleUrl).hostname}
+                </div>
               </div>
             </div>
           )}
@@ -690,13 +734,37 @@ function PostPage() {
             {(twitterSummary.length + (articleUrl ? articleUrl.length + 1 : 0))} / {TWITTER_LIMIT}
           </div>
           {/* Embedded clickable image preview for the article, similar to Bluesky */}
-          {articleMetadata && articleMetadata.image && articleUrl && (
+          {articleUrl && (
             <a href={articleUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 16, background: '#222', borderRadius: 8, margin: '12px 0', textDecoration: 'none', color: '#f0f0f0', boxShadow: '0 1px 4px #0002', overflow: 'hidden' }}>
-              <img src={articleMetadata.image} alt={articleMetadata.title} style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 8, flexShrink: 0 }} />
+              {articleMetadata?.image ? (
+                <img src={articleMetadata.image} alt={articleMetadata.title} style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 8, flexShrink: 0 }} />
+              ) : (
+                <div style={{
+                  width: 80,
+                  height: 80,
+                  background: 'linear-gradient(135deg, #1DA1F2 0%, #0d8bd9 100%)',
+                  borderRadius: 8,
+                  flexShrink: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#fff',
+                  fontSize: '24px',
+                  fontWeight: 'bold'
+                }}>
+                  📄
+                </div>
+              )}
               <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 600, fontSize: '1.05em', marginBottom: 4 }}>{articleMetadata.title}</div>
-                <div style={{ color: '#aaa', fontSize: '0.97em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{articleMetadata.description}</div>
-                <div style={{ color: '#1DA1F2', fontSize: '0.95em', marginTop: 4 }}>{articleUrl.replace(/^https?:\/\//, '').split('/')[0]}</div>
+                <div style={{ fontWeight: 600, fontSize: '1.05em', marginBottom: 4 }}>
+                  {articleMetadata?.title || `Article from ${new URL(articleUrl).hostname}`}
+                </div>
+                <div style={{ color: '#aaa', fontSize: '0.97em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {articleMetadata?.description || 'Click to read the full article...'}
+                </div>
+                <div style={{ color: '#1DA1F2', fontSize: '0.95em', marginTop: 4 }}>
+                  {articleUrl.replace(/^https?:\/\//, '').split('/')[0]}
+                </div>
               </div>
             </a>
           )}
