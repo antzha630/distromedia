@@ -105,14 +105,13 @@ function PostPage() {
       alert('Please enter an article URL before posting.');
       return;
     }
-    // Bluesky: 300 character limit, including URL
-    const urlToAppend = articleUrl ? ` ${articleUrl}` : '';
-    const totalLength = blueskySummary.length + urlToAppend.length;
-    if (totalLength > 300) {
-      alert('❌ Summary is too long. Please edit it to be 300 characters or under. Any links are included in the character count.');
+    // Bluesky: 300 character limit - no need to include URL in text since we have embedded preview
+    if (blueskySummary.length > 300) {
+      alert('❌ Summary is too long. Please edit it to be 300 characters or under.');
       return;
     }
-    const postText = blueskySummary + urlToAppend;
+    // Use only the summary text - the URL will be handled by the embedded preview
+    const postText = blueskySummary;
     console.log('Posting to Bluesky with:', { postText, articleUrl, articleMetadata });
     const res = await fetch('/api/bluesky/post', {
       method: 'POST',
@@ -221,15 +220,13 @@ function PostPage() {
       alert('Please enter a summary to post.');
       return;
     }
-    // Twitter: 280 character limit, including URL
-    let urlToAppend = articleUrl ? ` ${articleUrl}` : '';
-    let maxSummaryLength = 280 - urlToAppend.length;
-    let summary = twitterSummary;
-    if (summary.length > maxSummaryLength) {
-      alert('❌ Summary is too long. Please edit it to be 280 characters or under. Any links are included in the character count.');
+    // Twitter: 280 character limit - no need to include URL in text since we have embedded preview
+    if (twitterSummary.length > 280) {
+      alert('❌ Summary is too long. Please edit it to be 280 characters or under.');
       return;
     }
-    const tweetText = summary + urlToAppend;
+    // Use only the summary text - the URL will be handled by the embedded preview
+    const tweetText = twitterSummary;
     try {
       const res = await fetch('/api/twitter/post', {
         method: 'POST',
@@ -579,8 +576,8 @@ function PostPage() {
               padding: 0
             }}
           />
-          <div style={{ textAlign: 'right', fontSize: '0.95em', color: (blueskySummary.length + (articleUrl ? articleUrl.length + 1 : 0)) > BLUESKY_LIMIT ? '#e74c3c' : '#aaa', marginBottom: 8 }}>
-            {(blueskySummary.length + (articleUrl ? articleUrl.length + 1 : 0))} / {BLUESKY_LIMIT}
+          <div style={{ textAlign: 'right', fontSize: '0.95em', color: blueskySummary.length > BLUESKY_LIMIT ? '#e74c3c' : '#aaa', marginBottom: 8 }}>
+            {blueskySummary.length} / {BLUESKY_LIMIT}
           </div>
           {articleUrl && (
             <div style={{
@@ -732,14 +729,14 @@ function PostPage() {
               padding: 0
             }}
           />
-          <div style={{ textAlign: 'right', fontSize: '0.95em', color: (twitterSummary.length + (articleUrl ? articleUrl.length + 1 : 0)) > TWITTER_LIMIT ? '#e74c3c' : '#aaa', marginBottom: 8 }}>
-            {(twitterSummary.length + (articleUrl ? articleUrl.length + 1 : 0))} / {TWITTER_LIMIT}
+          <div style={{ textAlign: 'right', fontSize: '0.95em', color: twitterSummary.length > TWITTER_LIMIT ? '#e74c3c' : '#aaa', marginBottom: 8 }}>
+            {twitterSummary.length} / {TWITTER_LIMIT}
           </div>
           {/* Embedded clickable image preview for the article, similar to Bluesky */}
           {articleUrl && (
             <a href={articleUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 16, background: '#222', borderRadius: 8, margin: '12px 0', textDecoration: 'none', color: '#f0f0f0', boxShadow: '0 1px 4px #0002', overflow: 'hidden' }}>
               {articleMetadata?.image ? (
-                <img src={articleMetadata.image} alt={articleMetadata.title} style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 8, flexShrink: 0 }} />
+              <img src={articleMetadata.image} alt={articleMetadata.title} style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 8, flexShrink: 0 }} />
               ) : (
                 <div style={{
                   width: 80,
@@ -779,14 +776,12 @@ function PostPage() {
               alert('Please enter a summary to post.');
               return;
             }
-            // Always append the article URL and ensure total length <= 280
-            let urlToAppend = articleUrl ? ` ${articleUrl}` : '';
-            let maxSummaryLength = 280 - urlToAppend.length;
+            // Use only the summary text - the URL will be handled by the embedded preview
             let summary = twitterSummary;
-            if (summary.length > maxSummaryLength) {
-              summary = summary.substring(0, maxSummaryLength - 3) + '...';
+            if (summary.length > 280) {
+              summary = summary.substring(0, 277) + '...';
             }
-            const tweetText = summary + urlToAppend;
+            const tweetText = summary;
             try {
               const res = await fetch('/api/twitter/post', {
                 method: 'POST',
