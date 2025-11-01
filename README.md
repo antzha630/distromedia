@@ -113,22 +113,10 @@ DistroMedia is deployed on Vercel with automatic deployments from the main branc
 5. **Post**: Distribute content across selected platforms
 6. **Schedule**: Set up automated posting schedules
 
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
 ## 📄 License
 
 This project is private and proprietary. All rights reserved.
 
 ## 🆘 Support
 
-For support and questions, please contact the development team or create an issue in the repository.
-
----
-
-**Note**: This application requires valid API credentials for all integrated platforms. Make sure to follow each platform's terms of service and API usage guidelines.
+For support and questions, please contact the development team (Anthony Zhang) or create an issue in the repository.
