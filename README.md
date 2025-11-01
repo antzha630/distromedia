@@ -41,7 +41,7 @@ DistroMedia is a comprehensive social media management platform that allows user
 
 ## 🌐 Live Application
 
-DistroMedia is currently hosted and available at: **[Your Vercel URL]**
+DistroMedia is currently hosted and available at: **[distromedia.vercel](https://distromedia.vercel.app/)**
 
 The application is fully functional and ready to use for content creation and social media distribution across all supported platforms.
 
