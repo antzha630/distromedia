@@ -40,7 +40,7 @@ export default async function handler(req, res) {
     console.log('Sending to Distro API:', JSON.stringify(payload, null, 2));
 
     // Send to Distro API
-    const apiKey = process.env.DISTRO_API_KEY || '<aF+{:R>+lULOYbykL.z8s3m$zd;M,@A';
+    const apiKey = process.env.DISTRO_API_KEY || 'ml9]NVliba!Y6gzcU2EHF+*CUDc;aXt)';
     const apiEndpoint = process.env.DISTRO_API_ENDPOINT || 'https://pulse-chain-dc452eb2642a.herokuapp.com/api/external/news';
 
     const distroResponse = await fetch(apiEndpoint, {
