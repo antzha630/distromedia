@@ -40,7 +40,12 @@ export default async function handler(req, res) {
     console.log('Sending to Distro API:', JSON.stringify(payload, null, 2));
 
     // Send to Distro API
-    const apiKey = process.env.DISTRO_API_KEY ;
+    if (!process.env.DISTRO_API_KEY) {
+      return res.status(500).json({ 
+        error: 'DISTRO_API_KEY environment variable is not configured' 
+      });
+    }
+    const apiKey = process.env.DISTRO_API_KEY;
     const apiEndpoint = process.env.DISTRO_API_ENDPOINT || 'https://pulse-chain-dc452eb2642a.herokuapp.com/api/external/news';
 
     const distroResponse = await fetch(apiEndpoint, {
