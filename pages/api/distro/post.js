@@ -11,7 +11,8 @@ export default async function handler(req, res) {
       cost, 
       preview, 
       title, 
-      content 
+      content,
+      apiKey: providedApiKey 
     } = req.body;
 
     // Validate required fields
@@ -39,13 +40,15 @@ export default async function handler(req, res) {
 
     console.log('Sending to Distro API:', JSON.stringify(payload, null, 2));
 
-    // Send to Distro API
-    if (!process.env.DISTRO_API_KEY) {
+    // Use provided API key if available, otherwise fall back to environment variable
+    const apiKey = providedApiKey || process.env.DISTRO_API_KEY;
+    
+    if (!apiKey) {
       return res.status(500).json({ 
-        error: 'DISTRO_API_KEY environment variable is not configured' 
+        error: 'DISTRO_API_KEY is required. Please provide an API key in the form or configure the DISTRO_API_KEY environment variable.' 
       });
     }
-    const apiKey = process.env.DISTRO_API_KEY;
+    
     const apiEndpoint = process.env.DISTRO_API_ENDPOINT || 'https://pulse-chain-dc452eb2642a.herokuapp.com/api/external/news';
 
     const distroResponse = await fetch(apiEndpoint, {

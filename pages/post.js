@@ -28,6 +28,7 @@ function PostPage() {
   const [editedDistroTitle, setEditedDistroTitle] = useState('');
   const [editedDistroDescription, setEditedDistroDescription] = useState('');
   const [editedDistroContent, setEditedDistroContent] = useState('');
+  const [distroApiKey, setDistroApiKey] = useState('');
 
   useEffect(() => {
     const storedLinkedinSummary = sessionStorage.getItem('linkedinSummary');
@@ -280,7 +281,8 @@ function PostPage() {
         cost: 10,
         preview: cleanPreview,
         title: titleToUse.trim(),
-        content: cleanContent
+        content: cleanContent,
+        apiKey: distroApiKey || undefined // Include API key if provided
       };
 
       console.log('Distro payload:', JSON.stringify(payload, null, 2));
@@ -937,6 +939,31 @@ function PostPage() {
                   color: '#333'
                 }}
               />
+            </div>
+
+            {/* Distro API Key */}
+            <div style={{ marginBottom: 20 }}>
+              <label style={{ display: 'block', fontWeight: 600, marginBottom: 8, color: '#8B4513' }}>
+                Distro API Key (optional - leave blank to use default):
+              </label>
+              <input
+                type="password"
+                value={distroApiKey}
+                onChange={(e) => setDistroApiKey(e.target.value)}
+                placeholder="Enter your Distro API key to send to a specific newsletter"
+                style={{ 
+                  width: '100%', 
+                  padding: '12px', 
+                  border: '1px solid #ddd', 
+                  borderRadius: 8, 
+                  fontSize: '16px',
+                  background: '#fff',
+                  color: '#333'
+                }}
+              />
+              <p style={{ marginTop: 4, fontSize: '14px', color: '#666', fontStyle: 'italic' }}>
+                If left blank, the default API key will be used. Enter a custom API key to send to a different newsletter.
+              </p>
             </div>
 
             {/* Action Buttons */}
