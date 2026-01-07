@@ -80,8 +80,11 @@ function SchedulerPage() {
   };
 
   const summarize = async () => {
-    if (!inputText) {
-      alert('Please enter some text to summarize');
+    if (!inputText || inputText.trim().length === 0) {
+      const proceed = window.confirm('There is no text to summarize. Do you still want to proceed to the next page?');
+      if (proceed) {
+        handleGoToPostPage();
+      }
       return;
     }
     setSummarizing(true);
@@ -212,7 +215,7 @@ function SchedulerPage() {
     const noContentToSummarize = !inputText || inputText.trim().length === 0;
 
     if (noContentToSummarize && !hasAnySummary) {
-      const proceed = window.confirm('You have not summarized yet. Are you sure you want to proceed?');
+      const proceed = window.confirm('There is no text to summarize. Do you still want to proceed to the next page?');
       if (!proceed) return;
     }
 
@@ -399,22 +402,22 @@ function SchedulerPage() {
           </div>
         )}
 
-        <label htmlFor="articleInput">Article Content (Auto-populated from URL):</label>
+        <label htmlFor="articleInput">Article Content (Auto-populated from URL, or enter manually):</label>
         <textarea
           id="articleInput"
           rows="6"
-          placeholder="Article content will appear here after fetching from URL..."
+          placeholder="Article content will appear here after fetching from URL, or you can enter your own content here..."
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
-          readOnly
           style={{ 
             backgroundColor: '#2a2a2a', 
             color: '#ffffff',
             border: '1px solid #444',
             borderRadius: '8px',
             padding: '12px',
-            cursor: 'not-allowed',
-            fontFamily: 'inherit'
+            cursor: 'text',
+            fontFamily: 'inherit',
+            resize: 'vertical'
           }}
         />
         <button onClick={summarize} disabled={summarizing}>{summarizing ? 'Summarizing...' : 'Summarize'}</button>
